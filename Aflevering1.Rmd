@@ -1,6 +1,5 @@
 ---
 title: "Assignment 1"
-author: "Michaela Lukacova"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -29,7 +28,7 @@ sigma <- matrix(c(1, 0.25, 0.5, 0.25, 1, 0.5, 0.5, 0.5, 1), nrow = 3)
 X <- mvrnorm(n, c(0,0, 0), sigma)
 ```
 
-In order to condition on $|X_3| = 0$ we find the rows of $X$ for which $|X_3| \leq 0.05$:
+We will illustrate that the conditional distribution of $\begin{pmatrix} X_1 \\ X_2 \end{pmatrix} \vert X_3 = x_3$ is as expected by conditioning on $|X_3| = 0$. To approximate this ($X_3$ has a continuous distribution), we find the rows of $X$ for which $|X_3| \leq 0.05$:
 
 ```{r}
 cond <- which(abs(X[,3]) < 0.05)
@@ -41,7 +40,7 @@ We calculate the correlation of $X_1$ and $X_2$ for those $X_1$ and $X_2$ for wh
 cor(X[cond,1], X[cond,2])
 ```
 
-Which is as expected close to $0$. This is different from the correlation of $X_1$ and $X_2$ in general which is by construction $\approx 0.25$. 
+Which is as expected close to $0$. This is different from the correlation of $X_1$ and $X_2$ in general, which is by construction $\approx 0.25$:
 
 ```{r}
 cor(X[,1], X[,2])
@@ -49,7 +48,7 @@ cor(X[,1], X[,2])
 
 To visualize the conditional distribution of $X_1$ and $X_2$ we create the two scatterplot below. In the unconditional distribution the two variables are positively correlated, while they in the conditional distribution are uncorrelated, and thus (since they are normal) independent. 
 
-```{r, fig.width=10, fig.height=4, fig.align='center'}
+```{r, fig.width=10, fig.height=4, fig.align='center', echo = FALSE}
 grid.arrange(
 ggplot()+
   geom_point(aes(x = X[cond,1], y = X[cond,2]), alpha = 0.2, col = "steelblue")+
@@ -59,9 +58,9 @@ ggplot()+
   labs(x = "X1", y = "X2", title = "Unconditional"),
 nrow = 1)
 ```
-As a last illustration, we have made histograms of the marginal distributions of the two random variables, conditional on $X_3 = 0$ and unconditionally. 
+As a last illustration, we have made histograms of the marginal distributions of the two random variables, conditional on $X_3 = 0$ and unconditionally. The marginal distribution of both variables unconditionally is $\mathcal{N}(0,1)$ and conditionally on $X_3 = 0$, it is, with use of our calculations from the previous exercises, $\mathcal{N}(0, 0.75)$. 
 
-```{r}
+```{r, fig.width=10, fig.height=4, fig.align='center', echo = FALSE}
 d_x <- function(x) dnorm(x, mean = 0, sd = 1)
 d_x_cond <- function(x) dnorm(x, mean = 0, sd = sqrt(0.75))
 
@@ -69,32 +68,44 @@ grid.arrange(
 ggplot()+
   geom_histogram(aes(x = X[cond,1], y = ..density.., fill = "Conditional"), alpha = 0.3)+
   geom_histogram(aes(x = X[1:10000,1], y = ..density.., fill = "Unconditional"), alpha = 0.3)+
-  geom_function(fun = d_x, aes(col = "Unconditional"))+
-  geom_function(fun = d_x_cond, aes(col = "Conditional"))+
-  scale_color_manual(values = c("Conditional" = "steelblue","Unconditional" = "hotpink"))+
+  geom_function(fun = d_x, aes(color = "Unconditional"))+
+  geom_function(fun = d_x_cond, aes(color = "Conditional"))+
+    scale_fill_manual(values = c("Conditional" = "steelblue", "Unconditional" = "hotpink")) +
+    scale_color_manual(values = c("Conditional" = "steelblue", "Unconditional" = "hotpink")) +
+  guides(
+      fill = guide_legend("Distribution"),
+      color = guide_legend("Distribution")
+    )+
   labs(x = "X1", y = "density", title = "Histogram of X1"),
 ggplot()+
   geom_histogram(aes(x = X[cond,2], y = ..density.., fill = "Conditional"), alpha = 0.3)+
   geom_histogram(aes(x = X[1:10000,2], y = ..density.., fill = "Unconditional"), alpha = 0.3)+
-  geom_function(fun = d_x, aes(col = "Unconditional"))+
-  geom_function(fun = d_x_cond, aes(col = "Conditional"))+
-  scale_color_manual(values = c("Conditional" = "steelblue","Unconditional" = "hotpink"))+
+  geom_function(fun = d_x, aes(color = "Unconditional"))+
+  geom_function(fun = d_x_cond, aes(color = "Conditional"))+
+  scale_fill_manual(values = c("Conditional" = "steelblue", "Unconditional" = "hotpink")) +
+  scale_color_manual(values = c("Conditional" = "steelblue", "Unconditional" = "hotpink")) +
+  guides(
+      fill = guide_legend("Distribution"),
+      color = guide_legend("Distribution")
+    )+
   labs(x = "X2", y = "density", title = "Histogram of X2"),
 nrow = 1)
 ```
+Notice also how the variance reduces as we condition, this is also to be expected as we gain further information. 
+
+In example 2.5 we showed that the variance matrix of the conditional distribution does not depend on the value of the conditioning variable. Having thus showed that the $ X_1  \vert X_3 = 0$ and $ X_2 \vert X_3 = 0$ are independent and with the expected variance, this will also be true for all other values of $X_3$. (*er det rigtigt???*)
+
+All in all the conditional distribution of $\begin{pmatrix} X_1 \\ X_2 \end{pmatrix} \vert X_3$ behaves very much as expected. 
 
 # Part 2
 
 ```{r}
 load("assignment2024-1.Rdata")
-
-head(likingdata)
-summary(likingdata)
 ```
 
 Data plots:
 
-```{r}
+```{r, fig.width=10, fig.height=4, fig.align='center', echo = FALSE}
 likingdata <- data.table(likingdata)
 
 ggplot(data = likingdata)+
@@ -172,13 +183,8 @@ With a significance level of 0.05 we can most certainly not reject the null hypo
 
 ### Simulating from the t-distribution
 
-The variance of the $t$-distribution with $\nu$ degrees of freedom is:
-
-$$\frac{\nu}{\nu-2} = \frac{3}{3-2} = 3$$
-In order to achieve a variance of $\sigma^2$ we would therefore need to scale $X \sim t(3)$ with
-
-$$\sigma^2= V(c \cdot X) = c^2 3 \Leftrightarrow c = \sqrt{\frac{\sigma^2}{3}}$$
-
+The mean of the $t$-distribution is already $0$. The variance of the $t$-distribution with $\nu$ degrees of freedom is $\frac{\nu}{\nu-2} = \frac{3}{3-2} = 3$. In order to achieve a variance of $\sigma^2$ we would therefore need to scale $X \sim t(3)$ with
+$$\sigma^2= V(c \cdot X) = c^2 3 \Leftrightarrow c = {\frac{\sigma}{\sqrt3}}$$
 We define the scaling factors
 
 ```{r}
@@ -187,8 +193,20 @@ c_class <- tauC / sqrt(3)
 c_eps <- sigma / sqrt(3)
 ```
 
+We modify the simulation from question 5 to draw from the t-distribution. The variables drawn are scaled by the scaling factors defined above. 
 
-```{r, message = FALSE}
+```{r, message = FALSE, warning = FALSE}
+M <- 2000
+n_eps <- nrow(likingdata)
+n_par <- unique(likingdata$Participant) |> length()
+n_class <- unique(likingdata$Class) |> length()
+
+X <- fit2 |> model.matrix()
+Z <- getME(fit2, "Z")
+beta <- (summary(fit2) |> coef())[,1]
+tauP <- data.frame(VarCorr(fit2))[1,5]
+tauC <- data.frame(VarCorr(fit2))[2,5]
+sigma <- data.frame(VarCorr(fit2))[3,5]
 deltasim2 <- matrix(NA,M,3)
 
 for (i in 1:M){
@@ -207,19 +225,19 @@ deltasim2 <- deltasim2 |> data.frame()
 names(deltasim2) <- c("est","lower","upper")
 ```
 
-Bias:
+We calculate the bias:
 
 ```{r}
-mean(deltasim2$est - fixef(fit2)[4])
+mean(deltasim2$est - fixef(fit2)[4]) |> knitr::kable(col.names = " ")
 ```
 
-Coverage:
+And the coverage:
 
 ```{r}
-mean(deltasim2$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim2$upper)
+mean(deltasim2$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim2$upper) |> knitr::kable(col.names = " ")
 ```
 
-So even if the distribution we draw from is not normal, the estimates are unbiased and confidence intervals obtain coverage.
+The estimates are still practically unbiased and the confidence intervals achieve accurate coverage. 
 
 ### Simulating from the exponential distribution
 
@@ -231,15 +249,13 @@ and
 $$0 = E(\sigma X - k) = \sigma - k \Leftrightarrow k = \sigma$$
 
 We define the shift and scaling constants
-
 ```{r}
 c_par <- tauP
 c_class <- tauC 
 c_eps <- sigma
 ```
 
-
-```{r, message = FALSE}
+```{r, message = FALSE, warning = FALSE}
 deltasim3 <- matrix(NA,M,3)
 
 for (i in 1:M){
@@ -258,19 +274,21 @@ deltasim3 <- deltasim3 |> data.frame()
 names(deltasim3) <- c("est","lower","upper")
 ```
 
-Bias:
+We calculate the bias:
 
 ```{r}
-mean(deltasim3$est - fixef(fit2)[4])
+mean(deltasim3$est - fixef(fit2)[4]) |> knitr::kable(col.names = " ")
 ```
 
-Coverage:
+And the coverage:
 
 ```{r}
-mean(deltasim3$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim3$upper)
+mean(deltasim3$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim3$upper) |> knitr::kable(col.names = " ")
 ```
 
-Also okay. 
+The estimates are still almost unbiased and the confidence achieve accurate coverage. We can conclude that the model estimates and confidence intervals are not too sensitive to the type of distribution as long as the mean and variance is correctly specified. 
+
+*plot evt. histogrammer*
 
 ## 7.
 
@@ -301,11 +319,13 @@ Maybe some simulation to conclude whether the plots looks like they should.
 
 ## 8.
 
-```{r, message = FALSE}
+In order to examine how discretization of the response affects the LMM-based estimator for $\delta$, we simulate from the fit2 model, discretize the simulations by using the `round` function, fit a model on the simulated discretized data and extract the estimates and the CI boundaries. 
+
+```{r, message = FALSE, warning = FALSE}
 deltasim4 <- matrix(NA,M,3)
 
 for (i in 1:M){
-  y <- simulate(fit2)$sim_1 |> round()
+  y <- simulate(fit2)$sim_1 |> round() # evt. put alle forudsigelser større end 7 til 7, er det derfor vi har problemer i mange simulationer?????
   lmm2 <- lmer(y ~ ProdVersion + ProdType + (1|Participant) + (1|Class), data=likingdata)
   deltasim4[i,1] <- fixef(lmm2)[4]
   deltasim4[i,2:3] <- (lmm2 |> confint(method="Wald"))[7,]
@@ -315,19 +335,28 @@ deltasim4 <- deltasim4 |> data.frame()
 names(deltasim4) <- c("est","lower","upper")
 ```
 
-Bias:
+We calculate the bias:
 
 ```{r}
-mean(deltasim4$est - fixef(fit2)[4])
+mean(deltasim4$est - fixef(fit2)[4]) |> knitr::kable(col.names = " ")
 ```
 
-Coverage:
+And coverage:
 
 ```{r}
-mean(deltasim4$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim4$upper)
+mean(deltasim4$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim4$upper) |> knitr::kable(col.names = " ")
 ```
 
-Evt et histogram i de andre opgaver også. 
+We furthermore make a histogram over the estimated values
+
+```{r, warning = FALSE, message = FALSE, fig.width=10, fig.height=4, fig.align='center', echo = FALSE}
+ggplot(deltasim4) + 
+  geom_histogram(aes(x = est, y = ..density..), fill = "steelblue", col = "white")+
+  geom_vline(xintercept = fixef(fit2)[4])
+```
+
+We still obtain unbiased estimates and accurate coverage. The distribution looks approximately normal as well...
+
 
 
 
