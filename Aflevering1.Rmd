@@ -464,16 +464,23 @@ And coverage:
 mean(deltasim4$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim4$upper) |> knitr::kable(col.names = " ")
 ```
 
-We furthermore make a histogram over the estimated values
+So we still obtain the desired coverage and it seems that $\hat{\delta}$ is still an unbiased estimator, no matter whehter we discretize the predictor-variables or not.
 
-```{r, warning = FALSE, message = FALSE, fig.width=10, fig.height=4, fig.align='center', echo = FALSE}
-ggplot(deltasim4) + 
-  geom_histogram(aes(x = est, y = ..density..), fill = "steelblue", col = "white")+
-  geom_vline(xintercept = fixef(fit2)[4])
+To further investigate whether the two estimators behave the same, we plot a histogram of their distributions.
+```{r}
+data.frame(deltasim4) %>% 
+  ggplot() +
+  geom_histogram(aes(x = est, y = ..density.., fill = "discrete"), 
+                 color = "white", alpha = 0.5, bins = 30) +
+  geom_histogram(data = data.frame(deltasim), 
+                 aes(x = est, y = ..density.., fill = "continuous"), 
+                 color = "white", alpha = 0.5, bins = 30) +
+  geom_vline(xintercept = fixef(fit2)[4], 
+             color = "darkred", linetype = "dashed", size = 1, alpha = 0.8) +
+  scale_fill_manual(values = c("discrete" = "steelblue", "continuous" = "darkseagreen4"))
 ```
 
-We still obtain unbiased estimates and accurate coverage. The distribution looks approximately normal as well...
-
+Their distributions seem fairly similar as well. Although the one without discretization has smaller variance and is thus slightly more peaked. But overall it seems that both methods provide descent estimators of $\delta$.
 
 
 
