@@ -182,22 +182,12 @@ fit2 <- lmer(Liking ~ ProdVersion + ProdType + (1|Participant) + (1|Class), data
 Let $Y_{ijk}$ define the response of participant $j$ in class $k$ testing product $i$. The first model is then defined by
 
 $$Y_{ijk} = \beta_0 + B_j^{P} + B_k^{C} + \beta_i + \epsilon_{ijk}$$
-where $\beta_0$ is the global intercept corresponding to $ProductYoghurtA$ and $\beta_i$ for $i \in \{ProductYoghurtB, ProductYoghurtC, ProductCheeseA, ProductCheeseB, ProductCheeseC\}$ describes the difference between the global intercept and each other product. $B_j^{participant} \overset{i.i.d} \sim \mathcal{N}(0, \tau_P^2 I)$ is the random parameter of participant $j = 1,...,75$ and $B_k^{C} \overset{i.i.d}\sim \mathcal{N}(0, \tau_C^2 I)$ is the random parameter of class $k=1,...,5$. Finally, $\epsilon_{ijk} \overset{i.i.d}\sim \mathcal{N}(0, \sigma^2)$ is the residual for participant $j$ in class $k$, testing product $i$.
 
-We model participant and class as random effects because these variables are random samples from a larger population and we are as such not interested in these specific variables. We model product, ProdVersion and ProdType as fixed effects as we want to estimate the effect of these variables.
+where $\beta_0$ is the global intercept corresponding to $ProductYoghurtA$ and $\beta_i$ for $i \in \{ProductYoghurtA, ProductYoghurtB, ProductYoghurtC, ProductCheeseA, ProductCheeseB, ProductCheeseC\}$ describes the difference between the global intercept and each other product. In particular, $\beta_i$ is zero when participant $j$ is testing $ProductYoghurtA$ as it is encompassed in $\beta_0$. $B_j^{participant} \overset{i.i.d} \sim \mathcal{N}(0, \tau_P^2 I)$ is the random parameter of participant $j = 1,...,75$ and $B_k^{C} \overset{i.i.d}\sim \mathcal{N}(0, \tau_C^2 I)$ is the random parameter of class $k=1,...,5$. Finally, $\epsilon_{ijk} \overset{i.i.d}\sim \mathcal{N}(0, \sigma^2)$ is the residual for participant $j$ in class $k$, testing product $i$.
+
+We model participant and class as random effects because these variables are random samples from a larger population and we are as such not interested in these specific variables. We model product, ProdVersion and ProdType as fixed effects as we want to estimate how these affect the liking of the product by the children.
 
 
-The statistical model from fit1, can be described as:
-
-$$Y_{ijk} = \beta_{i} + B_{j}^{\text{par}} + B_{k}^{\text{class}} + \epsilon_{ijk}$$ 
-
-Where we use triple indexing. $i=1,\ldots, 6$ corresponds to the $6$ different products, $j=1,\ldots,75$ corresponds to the $75$ different participants, $k=1,\ldots,5$ corresponds to the $5$ different classes.
-
-Where $B^{\text{par}} \sim \mathcal{N}_{75}(0, \tau_{\text{par}}^2 I_{75})$, $B^{\text{class}} \sim \mathcal{N}_{5}(0, \tau_{\text{class}}^2 I_{5})$ and $\epsilon \sim \mathcal{N}_{450}(0, \sigma^2 I_{450})$ are all independent. 
-
-Participant and class are considered random effects, since we are not interested in the specific participants or classes as such, but rather as representatives of the population of children and classes. 
-
-Product is included as a fixed effect since we are interested in investigating the child friendliness of the different products. 
 
 ## 2.
 
