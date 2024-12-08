@@ -1,0 +1,683 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Assignment1},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Assignment1}
+\author{}
+\date{\vspace{-2.5em}2024-12-07}
+
+\begin{document}
+\maketitle
+
+\section{Part 1}\label{part-1}
+
+\subsection{5.}\label{section}
+
+We simulate the data. We simulate \(10^5\) data points form the
+multivariate normal distribution with mean
+\(\begin{pmatrix} 0 \\ 0 \\ 0 \end{pmatrix}\) and variance
+\(\begin{pmatrix} 1 & 0.25 & 0.5 \\ 0.25 & 1 & 0.5 \\ 0.5 & 0.5 & 1 \end{pmatrix}\).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{7878}\NormalTok{)}
+\NormalTok{n }\OtherTok{\textless{}{-}} \DecValTok{10}\SpecialCharTok{\^{}}\DecValTok{5}
+\NormalTok{sigma }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\FloatTok{0.25}\NormalTok{, }\FloatTok{0.5}\NormalTok{, }\FloatTok{0.25}\NormalTok{, }\DecValTok{1}\NormalTok{, }\FloatTok{0.5}\NormalTok{, }\FloatTok{0.5}\NormalTok{, }\FloatTok{0.5}\NormalTok{, }\DecValTok{1}\NormalTok{), }\AttributeTok{nrow =} \DecValTok{3}\NormalTok{)}
+\NormalTok{X }\OtherTok{\textless{}{-}} \FunctionTok{mvrnorm}\NormalTok{(n, }\FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{), sigma)}
+\end{Highlighting}
+\end{Shaded}
+
+We will illustrate that the conditional distribution of
+\(\begin{pmatrix} X_1 \\ X_2 \end{pmatrix} \vert X_3 = x_3\) is as
+expected by conditioning on \(|X_3| = 0\). To approximate this (\(X_3\)
+has a continuous distribution), we find the rows of \(X\) for which
+\(|X_3| \leq 0.05\):
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cond }\OtherTok{\textless{}{-}} \FunctionTok{which}\NormalTok{(}\FunctionTok{abs}\NormalTok{(X[,}\DecValTok{3}\NormalTok{]) }\SpecialCharTok{\textless{}} \FloatTok{0.05}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+We calculate the correlation of \(X_1\) and \(X_2\) for those \(X_1\)
+and \(X_2\) for which \(|X_3| \leq 0.05\).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cor}\NormalTok{(X[cond,}\DecValTok{1}\NormalTok{], X[cond,}\DecValTok{2}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.001381612
+\end{verbatim}
+
+Which is as expected close to \(0\). This is different from the
+correlation of \(X_1\) and \(X_2\) in general, which is by construction
+\(\approx 0.25\):
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cor}\NormalTok{(X[,}\DecValTok{1}\NormalTok{], X[,}\DecValTok{2}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.2495407
+\end{verbatim}
+
+To visualize the conditional distribution of \(X_1\) and \(X_2\) we
+create the two scatterplot below. In the unconditional distribution the
+two variables are positively correlated, while they in the conditional
+distribution are uncorrelated, and thus (since they are normal)
+independent.
+
+\begin{center}\includegraphics{Aflevering_1_pdf_files/figure-latex/unnamed-chunk-5-1} \end{center}
+
+As a last illustration, we have made histograms of the marginal
+distributions of the two random variables, conditional on \(X_3 = 0\)
+and unconditionally. The marginal distribution of both variables
+unconditionally is \(\mathcal{N}(0,1)\) and conditionally on
+\(X_3 = 0\), it is, with use of our calculations from the previous
+exercises, \(\mathcal{N}(0, 0.75)\).
+
+\begin{verbatim}
+## Warning: The dot-dot notation (`..density..`) was deprecated in ggplot2 3.4.0.
+## i Please use `after_stat(density)` instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.
+\end{verbatim}
+
+\begin{verbatim}
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+\end{verbatim}
+
+\begin{center}\includegraphics{Aflevering_1_pdf_files/figure-latex/unnamed-chunk-6-1} \end{center}
+
+Notice also how the variance reduces as we condition, this is also to be
+expected as we gain further information.
+
+In example 2.5 we showed that the variance matrix of the conditional
+distribution does not depend on the value of the conditioning variable.
+Having thus showed that the \(X_1| X_3 = 0\) and \$ X\_2 \textbar{} X\_3
+= 0\$ are independent and with the expected variance, this will also be
+true for all other values of \(X_3\). (\emph{er det rigtigt???})
+
+All in all the conditional distribution of
+\(\begin{pmatrix} X_1 \\ X_2 \end{pmatrix} \vert X_3\) behaves very much
+as expected.
+
+\section{Part 2}\label{part-2}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{load}\NormalTok{(}\StringTok{"assignment2024{-}1.Rdata"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Data plots:
+
+\begin{center}\includegraphics{Aflevering_1_pdf_files/figure-latex/unnamed-chunk-8-1} \end{center}
+
+Model fits:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit1 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(Liking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ Product }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{|}\NormalTok{Participant) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{|}\NormalTok{Class), }\AttributeTok{data=}\NormalTok{likingdata)}
+\NormalTok{fit2 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(Liking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ ProdVersion }\SpecialCharTok{+}\NormalTok{ ProdType }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{|}\NormalTok{Participant) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{|}\NormalTok{Class), }\AttributeTok{data=}\NormalTok{likingdata)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{1.}\label{section-1}
+
+The statistical model from fit1, can be described as:
+
+\[Y_{ijk} = \beta_{i} + B_{j}^{\text{par}} + B_{k}^{\text{class}} + \epsilon_{ijk}\]
+
+Where we use triple indexing. \(i=1,\ldots, 6\) corresponds to the \(6\)
+different products, \(j=1,\ldots,75\) corresponds to the \(75\)
+different participants, \(k=1,\ldots,5\) corresponds to the \(5\)
+different classes.
+
+Where
+\(B^{\text{par}} \sim \mathcal{N}_{75}(0, \tau_{\text{par}}^2 I_{75})\),
+\(B^{\text{class}} \sim \mathcal{N}_{5}(0, \tau_{\text{class}}^2 I_{5})\)
+and \(\epsilon \sim \mathcal{N}_{450}(0, \sigma^2 I_{450})\) are all
+independent.
+
+Participant and class are considered random effects, since we are not
+interested in the specific participants or classes as such, but rather
+as representatives of the population of children and classes.
+
+Product is included as a fixed effect since we are interested in
+investigating the child friendliness of the different products.
+
+\subsection{2.}\label{section-2}
+
+The formula for the correlation for two random variables \(X\) and \(Y\)
+is \(\frac{Cov(X,Y)}{\sqrt{(VY\cdot VY)}}\). By the independence of the
+random variables in the statistical model for fit1 we get that
+\(VY_{ijk}=\tau_{par}^2+\tau_{class}^2+ \sigma^2\). for all \(i,j\) and
+\(k\). We now consider the two different cases:
+
+If we look at the correlation between two observations for the same
+participants \(Y_{ijk}\) and \(Y_{ljk}\), we have independence between
+all random variable the bilinear properties of the covariance that: \[
+Cov(Y_{ijk},Y_{ljk}) = Cov
+\]
+
+\subsection{3.}\label{section-3}
+
+The factor \texttt{Product} is the interaction of the two factors
+\texttt{ProdVersion} and \texttt{ProdType}, therefore the subspace
+spanned by \texttt{ProdVersion} and \texttt{ProdType} is included in the
+subspace spanned by \texttt{Product}, and fit2 is thus a submodel of
+fit1. In other words if we know the \texttt{Product} we also know the
+\texttt{ProdVersion} and \texttt{ProdType}.
+
+In fit1 we estimate \(6\) different fixed effects parameters, 1
+intercept parameter, and then \(5\) additional parameters for each
+additional interaction level between \texttt{ProdVersion} and
+\texttt{ProdType}. In fit2 we estimate \(4\) fixed effect parameters,
+\(1\) intercept parameter, \(2\) for each additional
+\texttt{ProdVersion} level and \(1\) for the last level of
+\texttt{ProdType}. We assume no interaction effects between the two
+factors \texttt{ProdVersion} and \texttt{ProdType} in fit2.
+
+Letting \(L_0\) denote the subspace of \(\mathbb{R}^n\) spanned by the
+model matrix from fit2 and \(L_X\) denote the subspace of
+\(\\mathbb{R}^n\) spanned by the model matrix from fit1, we can test the
+hypothesis of \(EY \in L_0 \subseteq L_X\) with the likelihood ratio
+statistic. The test relies on asymptotic results which we use without
+further arguments. We perform the test by use of the anova command:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{anova}\NormalTok{(fit1,fit2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## refitting model(s) with ML (instead of REML)
+\end{verbatim}
+
+\begin{verbatim}
+## Data: likingdata
+## Models:
+## fit2: Liking ~ ProdVersion + ProdType + (1 | Participant) + (1 | Class)
+## fit1: Liking ~ Product + (1 | Participant) + (1 | Class)
+##      npar    AIC    BIC  logLik deviance  Chisq Df Pr(>Chisq)
+## fit2    7 1777.8 1806.6 -881.91   1763.8                     
+## fit1    9 1781.1 1818.1 -881.56   1763.1 0.7031  2     0.7036
+\end{verbatim}
+
+With a significance level of 0.05 we can most certainly not reject the
+null hypothesis, and we can conclude that the interaction factor
+\texttt{product} does not improve the model fit significantly.
+
+\emph{Jeg tænker at siden at p-værdien er så høj at vi ikke gider at
+simulere?}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# Simulated p{-}value in test for TVset}
+\CommentTok{\#sim12 \textless{}{-} pbkrtest::PBmodcomp(fit1, fit2, nsim=2000, seed=967)}
+\CommentTok{\#}
+\DocumentationTok{\#\# Extract simulated LRTs}
+\CommentTok{\#LRT\_12 \textless{}{-} as.numeric(sim12$ref)}
+\CommentTok{\#}
+\DocumentationTok{\#\# Density for chi{-}square with df=1}
+\CommentTok{\#dchisq2 \textless{}{-} function(x) dchisq(x,df=2)}
+\CommentTok{\#}
+\DocumentationTok{\#\# Histogram with overlaid density}
+\CommentTok{\#data.frame(LRT\_12 = LRT\_12) |\textgreater{} }
+\CommentTok{\#  ggplot(aes(x = LRT\_12)) + }
+\CommentTok{\#  geom\_histogram(aes(y = ..density..), breaks=seq(0,18,0.5), color="black", fill="white") +}
+\CommentTok{\#  geom\_function(fun = dchisq2, colour = "red", xlim=c(0.12,15), linewidth=1) +}
+\CommentTok{\#  xlab("LRT") + ylab("Density") + ggtitle("Test for ProdVersion effect") +}
+\CommentTok{\#  geom\_vline(xintercept=0.7031, color="blue",linewidth=1, linetype="dashed")}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#ggplot()+}
+\CommentTok{\#  geom\_histogram(aes(x = (1 {-} pchisq(LRT\_12, df = 2)), y = ..density..))+}
+\CommentTok{\#  geom\_hline(yintercept = 1)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{4.}\label{section-4}
+
+\subsection{5.}\label{section-5}
+
+\subsection{6.}\label{section-6}
+
+\subsubsection{Simulating from the
+t-distribution}\label{simulating-from-the-t-distribution}
+
+The mean of the \(t\)-distribution is already \(0\). The variance of the
+\(t\)-distribution with \(\nu\) degrees of freedom is
+\(\frac{\nu}{\nu-2} = \frac{3}{3-2} = 3\). In order to achieve a
+variance of \(\sigma^2\) we would therefore need to scale
+\(X \sim t(3)\) with
+\[\sigma^2= V(c \cdot X) = c^2 3 \Leftrightarrow c = {\frac{\sigma}{\sqrt3}}\]
+We define the scaling factors
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{tauP }\OtherTok{\textless{}{-}} \DecValTok{1}\NormalTok{; tauC }\OtherTok{\textless{}{-}} \DecValTok{1}\NormalTok{; sigma }\OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{c\_par }\OtherTok{\textless{}{-}}\NormalTok{ tauP }\SpecialCharTok{/} \FunctionTok{sqrt}\NormalTok{(}\DecValTok{3}\NormalTok{)}
+\NormalTok{c\_class }\OtherTok{\textless{}{-}}\NormalTok{ tauC }\SpecialCharTok{/} \FunctionTok{sqrt}\NormalTok{(}\DecValTok{3}\NormalTok{)}
+\NormalTok{c\_eps }\OtherTok{\textless{}{-}}\NormalTok{ sigma }\SpecialCharTok{/} \FunctionTok{sqrt}\NormalTok{(}\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+We modify the simulation from question 5 to draw from the
+t-distribution. The variables drawn are scaled by the scaling factors
+defined above.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{M }\OtherTok{\textless{}{-}} \DecValTok{2000}
+\NormalTok{n\_eps }\OtherTok{\textless{}{-}} \FunctionTok{nrow}\NormalTok{(likingdata)}
+\NormalTok{n\_par }\OtherTok{\textless{}{-}} \FunctionTok{unique}\NormalTok{(likingdata}\SpecialCharTok{$}\NormalTok{Participant) }\SpecialCharTok{|\textgreater{}} \FunctionTok{length}\NormalTok{()}
+\NormalTok{n\_class }\OtherTok{\textless{}{-}} \FunctionTok{unique}\NormalTok{(likingdata}\SpecialCharTok{$}\NormalTok{Class) }\SpecialCharTok{|\textgreater{}} \FunctionTok{length}\NormalTok{()}
+
+\NormalTok{X }\OtherTok{\textless{}{-}}\NormalTok{ fit2 }\SpecialCharTok{|\textgreater{}} \FunctionTok{model.matrix}\NormalTok{()}
+\NormalTok{Z }\OtherTok{\textless{}{-}} \FunctionTok{getME}\NormalTok{(fit2, }\StringTok{"Z"}\NormalTok{)}
+\NormalTok{beta }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{summary}\NormalTok{(fit2) }\SpecialCharTok{|\textgreater{}} \FunctionTok{coef}\NormalTok{())[,}\DecValTok{1}\NormalTok{]}
+\NormalTok{tauP }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\FunctionTok{VarCorr}\NormalTok{(fit2))[}\DecValTok{1}\NormalTok{,}\DecValTok{5}\NormalTok{]}
+\NormalTok{tauC }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\FunctionTok{VarCorr}\NormalTok{(fit2))[}\DecValTok{2}\NormalTok{,}\DecValTok{5}\NormalTok{]}
+\NormalTok{sigma }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\FunctionTok{VarCorr}\NormalTok{(fit2))[}\DecValTok{3}\NormalTok{,}\DecValTok{5}\NormalTok{]}
+\NormalTok{deltasim2 }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\ConstantTok{NA}\NormalTok{,M,}\DecValTok{3}\NormalTok{)}
+
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{M)\{}
+\NormalTok{  B1 }\OtherTok{\textless{}{-}} \FunctionTok{rt}\NormalTok{(}\AttributeTok{n =}\NormalTok{ n\_par, }\AttributeTok{df =} \DecValTok{3}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ c\_par}
+\NormalTok{  B2 }\OtherTok{\textless{}{-}} \FunctionTok{rt}\NormalTok{(}\AttributeTok{n =}\NormalTok{ n\_class, }\AttributeTok{df =} \DecValTok{3}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ c\_class}
+\NormalTok{  eps }\OtherTok{\textless{}{-}} \FunctionTok{rt}\NormalTok{(}\AttributeTok{n =}\NormalTok{ n\_eps, }\AttributeTok{df =} \DecValTok{3}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ c\_eps}
+\NormalTok{  B }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(B1,B2)}
+\NormalTok{  y }\OtherTok{\textless{}{-}}\NormalTok{ X }\SpecialCharTok{\%*\%}\NormalTok{ beta }\SpecialCharTok{+}\NormalTok{ Z }\SpecialCharTok{\%*\%}\NormalTok{ B }\SpecialCharTok{+}\NormalTok{ eps}
+\NormalTok{  y }\OtherTok{\textless{}{-}}\NormalTok{ y }\SpecialCharTok{|\textgreater{}} \FunctionTok{as.numeric}\NormalTok{() }\CommentTok{\# NB. This seems to be necessary}
+\NormalTok{  lmm2 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ ProdVersion }\SpecialCharTok{+}\NormalTok{ ProdType }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{|}\NormalTok{Participant) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{|}\NormalTok{Class), }\AttributeTok{data=}\NormalTok{likingdata)}
+\NormalTok{  deltasim2[i,}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{fixef}\NormalTok{(lmm2)[}\DecValTok{4}\NormalTok{]}
+\NormalTok{  deltasim2[i,}\DecValTok{2}\SpecialCharTok{:}\DecValTok{3}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (lmm2 }\SpecialCharTok{|\textgreater{}} \FunctionTok{confint}\NormalTok{(}\AttributeTok{method=}\StringTok{"Wald"}\NormalTok{))[}\DecValTok{7}\NormalTok{,]}
+\NormalTok{\}}
+
+\NormalTok{deltasim2 }\OtherTok{\textless{}{-}}\NormalTok{ deltasim2 }\SpecialCharTok{|\textgreater{}} \FunctionTok{data.frame}\NormalTok{()}
+\FunctionTok{names}\NormalTok{(deltasim2) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"est"}\NormalTok{,}\StringTok{"lower"}\NormalTok{,}\StringTok{"upper"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+We calculate the bias:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{mean}\NormalTok{(deltasim2}\SpecialCharTok{$}\NormalTok{est }\SpecialCharTok{{-}} \FunctionTok{fixef}\NormalTok{(fit2)[}\DecValTok{4}\NormalTok{]) }\SpecialCharTok{|\textgreater{}}\NormalTok{ knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\AttributeTok{col.names =} \StringTok{" "}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}r@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+-0.000313 \\
+\end{longtable}
+
+And the coverage:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{mean}\NormalTok{(deltasim2}\SpecialCharTok{$}\NormalTok{lower }\SpecialCharTok{\textless{}=} \FunctionTok{fixef}\NormalTok{(fit2)[}\DecValTok{4}\NormalTok{] }\SpecialCharTok{\&} \FunctionTok{fixef}\NormalTok{(fit2)[}\DecValTok{4}\NormalTok{] }\SpecialCharTok{\textless{}=}\NormalTok{ deltasim2}\SpecialCharTok{$}\NormalTok{upper) }\SpecialCharTok{|\textgreater{}}\NormalTok{ knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\AttributeTok{col.names =} \StringTok{" "}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}r@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0.9465 \\
+\end{longtable}
+
+The estimates are still practically unbiased and the confidence
+intervals achieve accurate coverage.
+
+\subsubsection{Simulating from the exponential
+distribution}\label{simulating-from-the-exponential-distribution}
+
+The mean of an exponentially distributed random variable \(X\) with rate
+equal to \(1\), is \(E(X) = 1\). And the variance of an is
+\$\frac{1}{\lambda^2} = 1 \$. In order to achieve a mean of \(0\) and a
+variance of \(\sigma^2\) we would therefore need to shift and scale
+\(X \sim exp(1)\) with
+
+\[\sigma^2= V(c \cdot X - k) = c^2  \Leftrightarrow c = \sigma\] and
+
+\[0 = E(\sigma X - k) = \sigma - k \Leftrightarrow k = \sigma\]
+
+We define the shift and scaling constants
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{c\_par }\OtherTok{\textless{}{-}}\NormalTok{ tauP}
+\NormalTok{c\_class }\OtherTok{\textless{}{-}}\NormalTok{ tauC }
+\NormalTok{c\_eps }\OtherTok{\textless{}{-}}\NormalTok{ sigma}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{deltasim3 }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\ConstantTok{NA}\NormalTok{,M,}\DecValTok{3}\NormalTok{)}
+
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{M)\{}
+\NormalTok{  B1 }\OtherTok{\textless{}{-}} \FunctionTok{rexp}\NormalTok{(}\AttributeTok{n =}\NormalTok{ n\_par, }\AttributeTok{rate =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ c\_par }\SpecialCharTok{{-}}\NormalTok{ c\_par}
+\NormalTok{  B2 }\OtherTok{\textless{}{-}} \FunctionTok{rexp}\NormalTok{(}\AttributeTok{n =}\NormalTok{ n\_class, }\AttributeTok{rate =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ c\_class }\SpecialCharTok{{-}}\NormalTok{  c\_class}
+\NormalTok{  eps }\OtherTok{\textless{}{-}} \FunctionTok{rexp}\NormalTok{(}\AttributeTok{n =}\NormalTok{ n\_eps, }\AttributeTok{rate =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ c\_eps }\SpecialCharTok{{-}}\NormalTok{ c\_eps}
+\NormalTok{  B }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(B1,B2)}
+\NormalTok{  y }\OtherTok{\textless{}{-}}\NormalTok{ X }\SpecialCharTok{\%*\%}\NormalTok{ beta }\SpecialCharTok{+}\NormalTok{ Z }\SpecialCharTok{\%*\%}\NormalTok{ B }\SpecialCharTok{+}\NormalTok{ eps}
+\NormalTok{  y }\OtherTok{\textless{}{-}}\NormalTok{ y }\SpecialCharTok{|\textgreater{}} \FunctionTok{as.numeric}\NormalTok{() }\CommentTok{\# NB. This seems to be necessary}
+\NormalTok{  lmm2 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ ProdVersion }\SpecialCharTok{+}\NormalTok{ ProdType }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{|}\NormalTok{Participant) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{|}\NormalTok{Class), }\AttributeTok{data=}\NormalTok{likingdata)}
+\NormalTok{  deltasim3[i,}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{fixef}\NormalTok{(lmm2)[}\DecValTok{4}\NormalTok{]}
+\NormalTok{  deltasim3[i,}\DecValTok{2}\SpecialCharTok{:}\DecValTok{3}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (lmm2 }\SpecialCharTok{|\textgreater{}} \FunctionTok{confint}\NormalTok{(}\AttributeTok{method=}\StringTok{"Wald"}\NormalTok{))[}\DecValTok{7}\NormalTok{,]}
+\NormalTok{\}}
+
+\NormalTok{deltasim3 }\OtherTok{\textless{}{-}}\NormalTok{ deltasim3 }\SpecialCharTok{|\textgreater{}} \FunctionTok{data.frame}\NormalTok{()}
+\FunctionTok{names}\NormalTok{(deltasim3) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"est"}\NormalTok{,}\StringTok{"lower"}\NormalTok{,}\StringTok{"upper"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+We calculate the bias:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{mean}\NormalTok{(deltasim3}\SpecialCharTok{$}\NormalTok{est }\SpecialCharTok{{-}} \FunctionTok{fixef}\NormalTok{(fit2)[}\DecValTok{4}\NormalTok{]) }\SpecialCharTok{|\textgreater{}}\NormalTok{ knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\AttributeTok{col.names =} \StringTok{" "}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}r@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+-0.005931 \\
+\end{longtable}
+
+And the coverage:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{mean}\NormalTok{(deltasim3}\SpecialCharTok{$}\NormalTok{lower }\SpecialCharTok{\textless{}=} \FunctionTok{fixef}\NormalTok{(fit2)[}\DecValTok{4}\NormalTok{] }\SpecialCharTok{\&} \FunctionTok{fixef}\NormalTok{(fit2)[}\DecValTok{4}\NormalTok{] }\SpecialCharTok{\textless{}=}\NormalTok{ deltasim3}\SpecialCharTok{$}\NormalTok{upper) }\SpecialCharTok{|\textgreater{}}\NormalTok{ knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\AttributeTok{col.names =} \StringTok{" "}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}r@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0.9505 \\
+\end{longtable}
+
+The estimates are still almost unbiased and the confidence achieve
+accurate coverage. We can conclude that the model estimates and
+confidence intervals are not too sensitive to the type of distribution
+as long as the mean and variance is correctly specified.
+
+\emph{plot evt. histogrammer}
+
+\subsection{7.}\label{section-7}
+
+We first examine the residuals. We do this by plotting the fitted values
+at level one against the residuals.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{ggplot}\NormalTok{(}\AttributeTok{data =} \FunctionTok{data.frame}\NormalTok{(}\FunctionTok{fitted}\NormalTok{(fit2)), }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =} \FunctionTok{fitted}\NormalTok{(fit2), }\AttributeTok{y =} \FunctionTok{residuals}\NormalTok{(fit2)))}\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{()}\SpecialCharTok{+}
+  \FunctionTok{geom\_smooth}\NormalTok{(}\AttributeTok{se =} \ConstantTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## `geom_smooth()` using method = 'loess' and formula = 'y ~ x'
+\end{verbatim}
+
+\includegraphics{Aflevering_1_pdf_files/figure-latex/unnamed-chunk-21-1.pdf}
+The lines are a result of the the response being discrete. The lines
+make it seem as if there are trends in the residuals, but as the
+geom\_smooth shows, the residuals have approximately mean \(0\).
+
+QQ-plot:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit2 }\SpecialCharTok{|\textgreater{}} \FunctionTok{resid}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{qqnorm}\NormalTok{(}\AttributeTok{main=}\StringTok{""}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Aflevering_1_pdf_files/figure-latex/unnamed-chunk-22-1.pdf}
+Looks good. We now turn to inspect the predicted random effects. They
+look OK.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(lattice)}
+\NormalTok{fit2 }\SpecialCharTok{|\textgreater{}} \FunctionTok{ranef}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{dotplot}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $Participant
+\end{verbatim}
+
+\includegraphics{Aflevering_1_pdf_files/figure-latex/unnamed-chunk-23-1.pdf}
+
+\begin{verbatim}
+## 
+## $Class
+\end{verbatim}
+
+\includegraphics{Aflevering_1_pdf_files/figure-latex/unnamed-chunk-23-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{qqmath}\NormalTok{(}\FunctionTok{ranef}\NormalTok{(fit2)}\SpecialCharTok{$}\NormalTok{Participant[,}\DecValTok{1}\NormalTok{], }\AttributeTok{main=}\StringTok{"Participant"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Aflevering_1_pdf_files/figure-latex/unnamed-chunk-23-3.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{qqmath}\NormalTok{(}\FunctionTok{ranef}\NormalTok{(fit2)}\SpecialCharTok{$}\NormalTok{Class[,}\DecValTok{1}\NormalTok{], }\AttributeTok{main=}\StringTok{"Class"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Aflevering_1_pdf_files/figure-latex/unnamed-chunk-23-4.pdf}
+
+Maybe some simulation to conclude whether the plots looks like they
+should.
+
+\subsection{8.}\label{section-8}
+
+In order to examine how discretization of the response affects the
+LMM-based estimator for \(\delta\), we simulate from the fit2 model,
+discretize the simulations by using the \texttt{round} function, fit a
+model on the simulated discretized data and extract the estimates and
+the CI boundaries.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{deltasim4 }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\ConstantTok{NA}\NormalTok{,M,}\DecValTok{3}\NormalTok{)}
+
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{M)\{}
+\NormalTok{  y }\OtherTok{\textless{}{-}} \FunctionTok{simulate}\NormalTok{(fit2)}\SpecialCharTok{$}\NormalTok{sim\_1 }\SpecialCharTok{|\textgreater{}} \FunctionTok{round}\NormalTok{() }\CommentTok{\# evt. put alle forudsigelser større end 7 til 7, er det derfor vi har problemer i mange simulationer?????}
+\NormalTok{  lmm2 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ ProdVersion }\SpecialCharTok{+}\NormalTok{ ProdType }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{|}\NormalTok{Participant) }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{|}\NormalTok{Class), }\AttributeTok{data=}\NormalTok{likingdata)}
+\NormalTok{  deltasim4[i,}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{fixef}\NormalTok{(lmm2)[}\DecValTok{4}\NormalTok{]}
+\NormalTok{  deltasim4[i,}\DecValTok{2}\SpecialCharTok{:}\DecValTok{3}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (lmm2 }\SpecialCharTok{|\textgreater{}} \FunctionTok{confint}\NormalTok{(}\AttributeTok{method=}\StringTok{"Wald"}\NormalTok{))[}\DecValTok{7}\NormalTok{,]}
+\NormalTok{\}}
+
+\NormalTok{deltasim4 }\OtherTok{\textless{}{-}}\NormalTok{ deltasim4 }\SpecialCharTok{|\textgreater{}} \FunctionTok{data.frame}\NormalTok{()}
+\FunctionTok{names}\NormalTok{(deltasim4) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"est"}\NormalTok{,}\StringTok{"lower"}\NormalTok{,}\StringTok{"upper"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+We calculate the bias:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{mean}\NormalTok{(deltasim4}\SpecialCharTok{$}\NormalTok{est }\SpecialCharTok{{-}} \FunctionTok{fixef}\NormalTok{(fit2)[}\DecValTok{4}\NormalTok{]) }\SpecialCharTok{|\textgreater{}}\NormalTok{ knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\AttributeTok{col.names =} \StringTok{" "}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}r@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+-0.0004756 \\
+\end{longtable}
+
+And coverage:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{mean}\NormalTok{(deltasim4}\SpecialCharTok{$}\NormalTok{lower }\SpecialCharTok{\textless{}=} \FunctionTok{fixef}\NormalTok{(fit2)[}\DecValTok{4}\NormalTok{] }\SpecialCharTok{\&} \FunctionTok{fixef}\NormalTok{(fit2)[}\DecValTok{4}\NormalTok{] }\SpecialCharTok{\textless{}=}\NormalTok{ deltasim4}\SpecialCharTok{$}\NormalTok{upper) }\SpecialCharTok{|\textgreater{}}\NormalTok{ knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\AttributeTok{col.names =} \StringTok{" "}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}r@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0.949 \\
+\end{longtable}
+
+We furthermore make a histogram over the estimated values
+
+\begin{center}\includegraphics{Aflevering_1_pdf_files/figure-latex/unnamed-chunk-27-1} \end{center}
+
+We still obtain unbiased estimates and accurate coverage. The
+distribution looks approximately normal as well\ldots{}
+
+\end{document}

@@ -1,10 +1,10 @@
 ---
-title: "Assignment 1"
+title: "Assignment1"
 date: "`r Sys.Date()`"
-output: html_document
+output: pdf_document
 ---
 
-```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 library(ggplot2)
@@ -12,7 +12,6 @@ library(MASS)
 library(gridExtra)
 library(data.table)
 library(lme4)
-library(tidyverse)
 theme_set(theme_bw())
 ```
 
@@ -94,84 +93,28 @@ nrow = 1)
 ```
 Notice also how the variance reduces as we condition, this is also to be expected as we gain further information. 
 
-In example 2.5 we showed that the variance matrix of the conditional distribution does not depend on the value of the conditioning variable. Having thus showed that the $ X_1  \vert X_3 = 0$ and $ X_2 \vert X_3 = 0$ are independent and with the expected variance, this will also be true for all other values of $X_3$. (*er det rigtigt???*)
+In example 2.5 we showed that the variance matrix of the conditional distribution does not depend on the value of the conditioning variable. Having thus showed that the $X_1| X_3 = 0$ and $ X_2 | X_3 = 0$ are independent and with the expected variance, this will also be true for all other values of $X_3$. (*er det rigtigt???*)
 
 All in all the conditional distribution of $\begin{pmatrix} X_1 \\ X_2 \end{pmatrix} \vert X_3$ behaves very much as expected. 
 
 # Part 2
 
-```{r, echo=FALSE}
+```{r}
 load("assignment2024-1.Rdata")
 ```
 
-We start out by visualizing the data. We first simply plot boxplots for each of the different products.
+Data plots:
 
-```{r, fig.width=10, fig.height=7, fig.align='center', echo = FALSE}
+```{r, fig.width=10, fig.height=4, fig.align='center', echo = FALSE}
 likingdata <- data.table(likingdata)
 
-p1 <- ggplot(data = likingdata)+
-  geom_boxplot(aes(x = Product, y = Liking)) + 
-  ggtitle("Boxplots of Product")
-
-p2 <- ggplot(data = likingdata)+
-  geom_boxplot(aes(x = ProdType, y = Liking)) + 
-  ggtitle("Boxplots of ProdType")
-
-p3 <- ggplot(data = likingdata)+
-  geom_boxplot(aes(x = ProdVersion, y = Liking)) + 
-  ggtitle("Boxplots of ProdVersion")
-
-# Create layout_matrix
-layout <- matrix(c(1, 1, 2, 3), nrow = 2, byrow = TRUE)
-
-# Arrange the plots
-grid.arrange(p1, p2, p3, layout_matrix = layout)
-```
-To visualize if there could possibly be a difference in overall liking based on `Class` we calculate the average liking in each Class for both `Product`, `ProdType` and `ProdVersion` and plot them.
-```{r, fig.width=10, fig.height=4, fig.align='center', echo=FALSE, warning=FALSE, message=FALSE}
-likingdata <- likingdata %>%
-  group_by(Class, ProdType) %>% 
-  mutate(mean_liking = mean(Liking, na.rm = TRUE)) %>%
-  ungroup()
-
-p2 <- ggplot(data = likingdata) + 
-  geom_point(aes(x = ProdType, y = mean_liking, color = Class), size = 2) +
-  ggtitle("Mean liking in each Class for ProdType")
-
-likingdata <- likingdata %>%
-  group_by(Class, ProdVersion) %>% 
-  mutate(mean_liking = mean(Liking, na.rm = TRUE)) %>%
-  ungroup()
-
-p3 <- ggplot(data = likingdata) + 
-  geom_point(aes(x = ProdVersion, y = mean_liking, color = Class), size = 2)+
-  ggtitle("Mean liking in each Class for ProdVersion")
-
-grid.arrange(p2, p3, ncol = 2)
+ggplot(data = likingdata)+
+  geom_boxplot(aes(x = Product, y = Liking))
 ```
 
-Based on the `ProdVersion`-plot it definitely seems that there might be a difference in the overall liking of the products based on `Class`. We are also interested in visualizing any potential effect of the different students on the liking of the products. So we draw 9 random participants and plot their `Liking` of the different product versions and colored according to the type of product.
+Model fits:
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=10, fig.height=4, fig.align='center'}
-#Drawing 15 random participants:
-set.seed(1234567)
-p <- as.vector(sample(likingdata$Participant, size = 9))
-
-likingdata_p <- likingdata[likingdata$Participant %in% p,] 
-
-p3 <- ggplot(data = likingdata_p) + 
-  geom_point(aes(x = ProdVersion, y = Liking, color = ProdType), size = 2) +
-  facet_wrap(~ Participant) +
-  ggtitle("Liking for Different Participants")
-
-# Display the plot
-print(p3)
-```
-
-
-Here we can see that there indeed does seem to be variations between the overall preferences of the participants, both in terms of overall rating, but also how the liking is linked to the different product types.
-
-```{r, echo=FALSE}
+```{r}
 fit1 <- lmer(Liking ~ Product + (1|Participant) + (1|Class), data=likingdata)
 fit2 <- lmer(Liking ~ ProdVersion + ProdType + (1|Participant) + (1|Class), data=likingdata)
 ```
@@ -192,18 +135,14 @@ Product is included as a fixed effect since we are interested in investigating t
 
 ## 2.
 
-The formula for the correlation for two random variables $X$ and $Y$ is $\frac{Cov(X,Y)}{\sqrt{(VY\cdot VY)}}$. By the independence of the random variables in the statistical model for `fit1` we get that $VY_{ijk}=\tau_{\text{par}}^2+\tau_{\text{class}}^2+ \sigma^2$. for all $i,j$ and $k$. We now consider the two different cases:
+The formula for the correlation for two random variables $X$ and $Y$ is $\frac{Cov(X,Y)}{\sqrt{(VY\cdot VY)}}$. By the independence of the random variables in the statistical model for fit1 we get that $VY_{ijk}=\tau_{par}^2+\tau_{class}^2+ \sigma^2$. for all $i,j$ and $k$. We now consider the two different cases:
 
-If we look at the correlation between two observations for the same participants $Y_{ijk}$ and $Y_{ljk}$, we have independence between all random variables in the statistical model, except for $B_{j}^{\text{par}}$ and $B_{k}^{\text{class}}$, which are not independent of themselves. We can use this alongside the bilinear properties of the covariance to see:
+If we look at the correlation between two observations for the same participants $Y_{ijk}$ and $Y_{ljk}$, we have independence between all random variable the bilinear properties of the covariance that:
 $$
-Cov(Y_{ijk},Y_{ljk}) = Cov(B_{j}^{\text{par}},B_{j}^{\text{par}}) + Cov(B_{k}^{\text{class}},B_{k}^{\text{class}}) = V(B_{j}^{\text{par}}) + V(B_{k}^{\text{class}}) = \tau_{\text{par}}^2+\tau_{\text{class}}^2
+Cov(Y_{ijk},Y_{ljk}) = Cov
 $$
-Thus we get that $cor(Y_{ijk},Y_{ljk}) = \frac{\tau_{\text{par}}^2+\tau_{\text{class}}^2}{\tau_{\text{par}}^2+\tau_{\text{class}}^2+\sigma^2}$ for observations from the same participant.
 
-If we now look at the correlation between observations from the same class, but not the same participant, we now have independence between all random variables in the model except for $B_{k}^{\text{class}}$. So by a similar argument to that above we get:
-$$
-cor(Y_{ijk},Y_{lpk})=\frac{\tau_{\text{class}}^2}{\tau_{\text{par}}^2+\tau_{\text{class}}^2+\sigma^2}
-$$
+
 
 ## 3. 
 
@@ -211,7 +150,7 @@ The factor `Product` is the interaction of the two factors `ProdVersion` and `Pr
 
 In fit1 we estimate $6$ different fixed effects parameters, 1 intercept parameter, and then $5$ additional parameters for each additional interaction level between `ProdVersion` and `ProdType`. In fit2 we estimate $4$ fixed effect parameters, $1$ intercept parameter, $2$ for each additional `ProdVersion` level and $1$ for the last level of `ProdType`. We assume no interaction effects between the two factors `ProdVersion` and `ProdType` in fit2. 
 
-Letting $L_0$ denote the subspace of $\RR^n$ spanned by the model matrix from fit2 and $L_X$ denote the subspace of $\RR^n$ spanned by the model matrix from fit1, we can test the hypothesis of $EY \in L_0 \subseteq L_X$ with the likelihood ratio statistic. The test relies on asymptotic results which we use without further arguments. We perform the test by use of the anova command: 
+Letting $L_0$ denote the subspace of $\mathbb{R}^n$ spanned by the model matrix from fit2 and $L_X$ denote the subspace of $\\mathbb{R}^n$ spanned by the model matrix from fit1, we can test the hypothesis of $EY \in L_0 \subseteq L_X$ with the likelihood ratio statistic. The test relies on asymptotic results which we use without further arguments. We perform the test by use of the anova command: 
 
 ```{r}
 anova(fit1,fit2)
@@ -248,52 +187,6 @@ With a significance level of 0.05 we can most certainly not reject the null hypo
 ## 4. 
 
 ## 5. 
-We use the code from the hint to run 2000 simulations from `fit2`. We first extract the modelmatrices $X$ and $Z$ and the parameterestimates for $\beta, \tau_{\text{par}}^2, \tau_{\text{classr}}^2$ and $\sigma^2$. We then create an empty $3\times2000$ matrix to store the simulations of $\hat{\delta}$ and the corresponding Wald confidence bands. Then we fill out the entries of the matrix with a for loop. So for each $i$ we simulate values respectively 75, 5 and 450 values from $B^{\text{par}}, B_^{\text{class}}$ and $\varepsilon$, and use those to create a new set of y-values $y = X\beta + Z(B^{\text{par}} + B^{\text{class}}) + \varepsilon$. We then fit a new model specified as `fit2` and calculate corresponding confidence intervals using the Wald-method.
-```{r, warning=FALSE, message=FALSE}
-library(MASS)
-M <- 2000
-
-#Extracting parameters and modelmatrices
-X <- fit2 %>% model.matrix()
-Z <- fit2 %>% getME(name="Z")
-beta <- fixef(fit2)
-tauP <- data.frame(VarCorr(fit2))$sdcor[1]
-tauC <- data.frame(VarCorr(fit2))$sdcor[2]
-sigma <- data.frame(VarCorr(fit2))$sdcor[3]
-
-#Creating matrix
-deltasim <- matrix(NA, M, 3)
-#Iteratively simulating delta and confidence intervals
-for (i in 1:M)
-{
-B1 <- mvrnorm(75, 0, tauP)
-B2 <- mvrnorm(5, 0, tauC)
-eps <- mvrnorm(450, 0, sigma)
-B <- c(B1,B2)
-y <- X %*% beta + Z %*% B + eps
-y <- y %>% as.numeric() # NB. This seems to be necessary
-lmm2 <- lmer(y ~ ProdVersion + ProdType + (1|Participant) + (1|Class), data=likingdata)
-deltasim[i,1] <- fixef(lmm2)[4]
-deltasim[i,2:3] <- (lmm2 %>% confint(method="Wald"))[7,]
-}
-
-#Changing format to a dataframe and changing names
-deltasim <- deltasim %>% data.frame()
-names(deltasim) <- c("est","lower","upper")
-```
-
-To see if $\hat{\delta}$ is approximately an unbiased estimator of $\delta$, we check whether the mean of $\hat{\delta}$ is approximately equal to $\delta$.
-```{r}
-delta <- fixef(fit2)[4]
-unname(mean(deltasim$est) - delta)
-```
-This is close to 0, so $\hat{\delta}$ seems to be fairly unbiased.
-
-To check if we obtain the desired coverage, we simply calculate what percentage of the simulated intervals cover our true $\delta$-vaule.
-```{r}
-sum(delta < deltasim$upper & delta > deltasim$lower)/2000
-```
-As we can see, we obtain approximately the desired coverage.
 
 ## 6.
 
@@ -464,23 +357,16 @@ And coverage:
 mean(deltasim4$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim4$upper) |> knitr::kable(col.names = " ")
 ```
 
-So we still obtain the desired coverage and it seems that $\hat{\delta}$ is still an unbiased estimator, no matter whether we discretize the predictor-variables or not.
+We furthermore make a histogram over the estimated values
 
-To further investigate whether the two estimators behave the same, we plot a histogram of their distributions.
-```{r}
-data.frame(deltasim4) %>% 
-  ggplot() +
-  geom_histogram(aes(x = est, y = ..density.., fill = "discrete"), 
-                 color = "white", alpha = 0.5, bins = 30) +
-  geom_histogram(data = data.frame(deltasim), 
-                 aes(x = est, y = ..density.., fill = "continuous"), 
-                 color = "white", alpha = 0.5, bins = 30) +
-  geom_vline(xintercept = fixef(fit2)[4], 
-             color = "darkred", linetype = "dashed", size = 1, alpha = 0.8) +
-  scale_fill_manual(values = c("discrete" = "steelblue", "continuous" = "darkseagreen4"))
+```{r, warning = FALSE, message = FALSE, fig.width=10, fig.height=4, fig.align='center', echo = FALSE}
+ggplot(deltasim4) + 
+  geom_histogram(aes(x = est, y = ..density..), fill = "steelblue", col = "white")+
+  geom_vline(xintercept = fixef(fit2)[4])
 ```
 
-Their distributions seem fairly similar as well. Although the one without discretization has smaller variance and is thus slightly more peaked. But overall it seems that both methods provide descent estimators of $\delta$.
+We still obtain unbiased estimates and accurate coverage. The distribution looks approximately normal as well...
+
 
 
 
