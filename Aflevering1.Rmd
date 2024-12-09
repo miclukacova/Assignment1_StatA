@@ -29,13 +29,13 @@ sigma <- matrix(c(1, 0.25, 0.5, 0.25, 1, 0.5, 0.5, 0.5, 1), nrow = 3)
 X <- mvrnorm(n, c(0,0, 0), sigma)
 ```
 
-To illustrate that the conditional distribution of $\begin{pmatrix} X_1 \\ X_2 \end{pmatrix} \vert X_3 = x_3$ is as expected, we condition on $X_3 = 0$. We approximate this ($X_3$ has a continuous distribution), by subsetting the rows of $X$ for which $|X_3| \leq 0.05$:
+To illustrate that the conditional distribution of $\begin{pmatrix} X_1 \\ X_2 \end{pmatrix} \vert X_3 = x_3$ is as expected, we condition on $X_3 = 0$. We approximate this ($X_3$ has a continuous distribution), by subsetting the rows of $X$ for which $|X_3| < 0.05$:
 
 ```{r}
 cond <- which(abs(X[,3]) < 0.05)
 ```
 
-We calculate the correlation of $X_1$ and $X_2$ for those $X_1$ and $X_2$ for which $|X_3| \leq 0.05$. 
+We calculate the correlation of $X_1$ and $X_2$ for which $|X_3| < 0.05$. 
 
 ```{r}
 cor(X[cond,1], X[cond,2]) |> knitr::kable(col.names = " ")
@@ -94,7 +94,7 @@ nrow = 1)
 ```
 Notice also how the variance reduces as we condition, this is also to be expected as we gain further information. 
 
-From example 2.5 we know that the variance matrix in the conditional distribution of Gaussian random variables is independent of the value of the conditioning variable. Having illustrated that the two random variables $X_1  \vert X_3 = 0$ and $X_2 \vert X_3 = 0$ are independent and with the variance we expect, this will also be true for all other values of $X_3$. 
+From example 2.5 we know that the variance matrix in the conditional distribution of Gaussian random variables does not depend on the value of the conditioning variable. Having illustrated that the two random variables $X_1  \vert X_3 = 0$ and $X_2 \vert X_3 = 0$ are independent and with the variance we expect, this will also be true for all other values of $X_3$. 
 
 All in all the conditional distribution of $\begin{pmatrix} X_1 \\ X_2 \end{pmatrix} \vert X_3$ behaves as expected. 
 
@@ -182,7 +182,7 @@ We proceed with a brief description of the stastical model fitted in `fit1`. Let
 
 $$Y_{ijk} = \beta_0 + B_j^{P} + B_k^{C} + \beta_i + \epsilon_{ijk}$$
 
-where $\beta_0$ is the global intercept corresponding to `ProductYoghurtA` and $\beta_i$ for $$i \in \{ProductYoghurtA, ProductYoghurtB, ProductYoghurtC, ProductCheeseA, ProductCheeseB, ProductCheeseC\}$$ describes the difference between the global intercept and each other product. Note, that there in fact is no $\beta_{ProductYoghurtA}$ in the model as this is included in $\beta_0$. The $B_j^{P} \overset{i.i.d} \sim \mathcal{N}(0, \tau_P^2 I)$ is the random parameter of participant $j = 1,...,75$ and $B_k^{C} \overset{i.i.d}\sim \mathcal{N}(0, \tau_C^2 I)$ is the random parameter of class $k=1,...,5$. Finally, $\epsilon_{ijk} \overset{i.i.d}\sim \mathcal{N}(0, \sigma^2)$ is the residual for participant $j$ in class $k$, testing product $i$.
+where $\beta_0$ is the global intercept corresponding to `ProductYoghurtA` and $\beta_i$ for $$i \in \{ProductYoghurtA, ProductYoghurtB, ProductYoghurtC, ProductCheeseA, ProductCheeseB, ProductCheeseC\}$$ describes the difference between the global intercept and each other product. Note, that there in fact is no $\beta_{ProductYoghurtA}$ in the model as this is included in $\beta_0$. The $B_j^{P} \overset{i.i.d} \sim \mathcal{N}(0, \tau_P^2 I)$ is the random parameter of participant $j = 1,...,75$ and $B_k^{C} \overset{i.i.d}\sim \mathcal{N}(0, \tau_C^2 I)$ is the random parameter of class $k=1,...,5$. Finally, $\epsilon_{ijk} \overset{i.i.d}\sim \mathcal{N}(0, \sigma^2)$ is the residual for participant $j$ in class $k$, testing product $i$. We assume independence between all $B_j^{P}$, $B_k^{C}$ and $\epsilon_{ijk}$.
 
 We model participant and class as random effects since these variables are random samples from a larger population and we are as such not interested in these specific observations, only the variance they add to the model through dependence structures. We model `Product` as a fixed effect as we want to estimate, how the different products effect the overall liking.
 
