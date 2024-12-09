@@ -178,14 +178,13 @@ fit2 <- lmer(Liking ~ ProdVersion + ProdType + (1|Participant) + (1|Class), data
 
 ## 1.
 
-
 Let $Y_{ijk}$ define the response of participant $j$ in class $k$ testing product $i$. The first model is then defined by
 
 $$Y_{ijk} = \beta_0 + B_j^{P} + B_k^{C} + \beta_i + \epsilon_{ijk}$$
 
-where $\beta_0$ is the global intercept corresponding to $ProductYoghurtA$ and $\beta_i$ for $i \in \{ProductYoghurtA, ProductYoghurtB, ProductYoghurtC, ProductCheeseA, ProductCheeseB, ProductCheeseC\}$ describes the difference between the global intercept and each other product. In particular, $\beta_i$ is zero when participant $j$ is testing $ProductYoghurtA$ as it is encompassed in $\beta_0$. $B_j^{participant} \overset{i.i.d} \sim \mathcal{N}(0, \tau_P^2 I)$ is the random parameter of participant $j = 1,...,75$ and $B_k^{C} \overset{i.i.d}\sim \mathcal{N}(0, \tau_C^2 I)$ is the random parameter of class $k=1,...,5$. Finally, $\epsilon_{ijk} \overset{i.i.d}\sim \mathcal{N}(0, \sigma^2)$ is the residual for participant $j$ in class $k$, testing product $i$.
+where $\beta_0$ is the global intercept corresponding to `ProductYoghurtA` and $\beta_i$ for $i \in \{ProductYoghurtA, ProductYoghurtB, ProductYoghurtC, ProductCheeseA, ProductCheeseB, ProductCheeseC\}$ describes the difference between the global intercept and each other product. Hence there is no $\beta_{ProductYoghurtA}$ in the model as it is included in $\beta_0$. $B_j^{participant} \overset{i.i.d} \sim \mathcal{N}(0, \tau_P^2 I)$ is the random parameter of participant $j = 1,...,75$ and $B_k^{C} \overset{i.i.d}\sim \mathcal{N}(0, \tau_C^2 I)$ is the random parameter of class $k=1,...,5$. Finally, $\epsilon_{ijk} \overset{i.i.d}\sim \mathcal{N}(0, \sigma^2)$ is the residual for participant $j$ in class $k$, testing product $i$.
 
-We model participant and class as random effects because these variables are random samples from a larger population and we are as such not interested in these specific variables. We model product, ProdVersion and ProdType as fixed effects as we want to estimate how these affect the liking of the product by the children.
+We model participant and class as random effects because these variables are random samples from a larger population and we are as such not interested in these specific variables, only the variance they add to the model. We model `Product` as fixed effect because we want to estimate the effect of the different products the liking of the product by the children.
 
 
 
@@ -246,22 +245,27 @@ With a significance level of 0.05 we can most certainly not reject the null hypo
 
 ## 4. 
 
-To test whether the children like all three versions of the product equally well, we can check that none of the fixed effects are significantly different from each other. Hence, if the `ProdVersion` is significant in the model, there is evidence, that the children do not like all three versions equally well. 
-
-To test whether the children like cheese and yoghurt equally well, we check that the `ProdType` is not significant in the model. If the `ProdType` is significant, there is evidence that the children do not like cheese and yoghurt equally well.
-
-To sum up, we test the two hypotheses: $H_{01}: \beta_{ProdVersion} = 0$ and $H_{02}: \beta_{ProdType} = 0$.
-
-We test both of these hypotheses using the `drop1()` function with `test = "Chisq"`:
+To test whether the children like all three versions of the product equally well, we can check that none of the fixed effects are significantly different from each other. That is, we check if `ProdVersion` or `ProdType` are significant in the model, as this would suggest, that the children do not like all three versions equally well. To sum up, we test the two hypotheses: $H_{01}: \beta_{ProdVersion} = 0$ and $H_{02}: \beta_{ProdType} = 0$. We test both of these hypotheses using the `drop1()` function with `test = "Chisq"`:
 ```{r}
 drop1(fit2, test = "Chisq")
 ```
 
-We get a p-value of `0.011` for `ProdVersion` and a p-value of `< 2e-16` for `ProdType`, so on a 5% significance level, we reject both null hypotheses. This means, that there is evidence that the children do not like all three versions equally well and that there is evidence that the children do not like cheese and yoghurt equally well.
+We get a p-value of `0.011` for `ProdVersion` and a p-value of `< 2e-16` for `ProdType`, so on a 5% significance level, we reject both null hypotheses. This means, that there is evidence that the children do not like all three versions equally well and that there is evidence that the children do not like cheese and yoghurt equally well. We should keep in mind, that the chisquare test is an asymptotic test, and we do not know if the asymptotics have set in, so we should be careful with the results, especially for `ProdVersion` as this is only borderline significant.
 
-From the model coefficients, we see that the children like yoghurt better than cheese. We also see evidence, that children like `VersionA` of the products better than `VersionB` of the products, which again seem to be preffered over `VersionC` of the products. However, we have not tested each level of the Version variable against each other, so we cannot for sure tell, if there is significant difference between `VersionA` and `VersionB` or `VersionB` and `VersionC`, we just know, that there is a significant difference between the levels of the `ProdVersion` variable.
+Having determined that the children's preferences differ between product versions and product types, we can also examine in what way. From the model coefficients, we see evidence that the children like yoghurt better than cheese. To check which product version the children like better, we determine the 95%-profile likelihood confidence interval for the model parameters:
 
-We should finally note, that the chisquare test is based on asymptotic results, and since we do not know if the asymptotics have set in, we should be careful with the results, especially for `ProdVersion` as this is only borderline significant.
+```{r}
+confint(fit2, oldNames = FALSE)
+```
+The children seem to like `ProdVersionA` better than `ProdVersionC` (CI for `ProdVersionC` does not include 0), but there is not strong evidence that they like `ProdVersionA` over `ProdVersionB` (CI for `ProdVersionB` includes 0). To investigate if the children like `ProdVersionB` better than `ProdVersionC`, we refit the model with `ProdVersionB` as the reference level and determine the 95%-profile likelihood confidence intervals in this parametrization:
+
+```{r}
+relevelfit <- lmer(Liking ~ relevel(ProdVersion, ref = 2) + ProdType + (1 | Participant) + (1 | Class), data = likingdata)
+confint(relevelfit, oldNames = FALSE)
+```
+
+From the confidence intervals we see no strong evidence that the children like `ProductVersionB` better than `ProductVersionC`. To sum up: On a 95% significance level the children seem to like `ProductVersionA` better than `ProductVersionC`, but there is not enough evidence that the children like `ProductVersionA` better than `ProductVersionB` or `ProductVersionB` better than `ProductVersionC`, according to this model.
+
 
 ## 5. 
 We use the code from the hint to run 2000 simulations from `fit2`. We first extract the modelmatrices $X$ and $Z$ and the parameterestimates for $\beta, \tau_{\text{par}}^2, \tau_{\text{classr}}^2$ and $\sigma^2$. We then create an empty $3\times2000$ matrix to store the simulations of $\hat{\delta}$ and the corresponding Wald confidence bands. Then we fill out the entries of the matrix with a for loop. So for each $i$ we simulate values respectively 75, 5 and 450 values from $B^{\text{par}}, B_^{\text{class}}$ and $\varepsilon$, and use those to create a new set of y-values $y = X\beta + Z(B^{\text{par}} + B^{\text{class}}) + \varepsilon$. We then fit a new model specified as `fit2` and calculate corresponding confidence intervals using the Wald-method.
@@ -425,9 +429,9 @@ The estimates are still almost unbiased and the confidence achieve accurate cove
 
 ## 7.
 
-We follow the procedure given in chapter 5 of the lecture notes on mixed models. We start with a residual plot:
+We proceed to carry out model validaiton for `fit2`. We follow the procedure given in chapter 5 of the lecture notes on mixed models. We start with a residual plot:
 
-```{r}
+```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=10, fig.height=4, fig.align='center'}
 fit2res <- fit2 %>% residuals()
 fit2fitted <- fit2 %>% fitted()
 
@@ -440,27 +444,77 @@ ggplot(fit2Diag, aes(x = fitted, y = residuals)) +
   labs(x = "Fitted values", y = "Residuals")
 ```
 
-From the plot we are tempted to conclude that the residuals display an inexpedient pattern. We should however keep in mind, that the response is discrete while the fitted values are not. Hence, the lines in the plot we see, are to be expected. In particular, for each response value, $a = 1,...,7$, we have a linear relationship between the fitted values and the residuals $Resdiual = a - Fitted$. The line fitted with `geom_smooth` suggests, that the residuals have mean around zero, and display no alarming trend. Hence, it seems reasonable to conclude that the model captures the mean structure of the data.
+We may be tempted to conclude that the residuals display an alarming pattern. We should however keep in mind, that the response is discrete while the fitted values are not. Hence, the lines in the plot, are in fact to be expected. In particular, for each response value, $a = 1,...,7$, we have a linear relationship between the fitted values and the residuals $Resdiual = a - Fitted$. The line fitted with `geom_smooth` suggests, that the residuals have mean around zero, and display no concerning trend. We run a few simulations to check the residual plot:
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=10, fig.height=4, fig.align='center'}
+yNew1 <- round(simulate(fit2)[,1])
+yNew2 <- round(simulate(fit2)[,1])
+yNew3 <- round(simulate(fit2)[,1])
+yNew4 <- round(simulate(fit2)[,1])
+simGlmNew1 <- lmer(yNew1 ~ ProdVersion + ProdType + (1 | Participant) + (1 | Class), data = likingdata)
+simGlmNew2 <- lmer(yNew2 ~ ProdVersion + ProdType + (1 | Participant) + (1 | Class), data = likingdata)
+simGlmNew3 <- lmer(yNew3 ~ ProdVersion + ProdType + (1 | Participant) + (1 | Class), data = likingdata)
+simGlmNew4 <- lmer(yNew4 ~ ProdVersion + ProdType + (1 | Participant) + (1 | Class), data = likingdata)
+simDiagNew1 <- data.frame(residuals = residuals(simGlmNew1), fitted = fitted(simGlmNew1))
+simDiagNew2 <- data.frame(residuals = residuals(simGlmNew2), fitted = fitted(simGlmNew2))
+simDiagNew3 <- data.frame(residuals = residuals(simGlmNew3), fitted = fitted(simGlmNew3))
+simDiagNew4 <- data.frame(residuals = residuals(simGlmNew4), fitted = fitted(simGlmNew4))
+p1 <- ggplot(simDiagNew1, aes(x = fitted, y = residuals)) + 
+  geom_point() +
+  xlab("Fitted values") +
+  ylab("Residuals") +
+  geom_smooth() +
+  theme_bw()
+p2 <- ggplot(simDiagNew2, aes(x = fitted, y = residuals)) + 
+  geom_point() +
+  xlab("Fitted values") +
+  ylab("Residuals") +
+  geom_smooth() +
+  theme_bw()
+p3 <- ggplot(simDiagNew3, aes(x = fitted, y = residuals)) + 
+  geom_point() +
+  xlab("Fitted values") +
+  ylab("Residuals") +
+  geom_smooth() +
+  theme_bw()
+p4 <- ggplot(simDiagNew4, aes(x = fitted, y = residuals)) + 
+  geom_point() +
+  xlab("Fitted values") +
+  ylab("Residuals") +
+  geom_smooth() +
+  theme_bw()
+grid.arrange(p1, p2, p3, p4, ncol = 2)
+```
+
+Note, we have discretized the response in the simulations to get a more fair picture of the residual. We have no other restrictions on the predictions, so the model simulates responses outside the range 1 to 7. This gives more lines that the original residual plot. But beside these facts, the residual plots for the simulations resemble the residual plot for the original model. Hence, it seems reasonable to conclude that the model captures the mean structure of the data.
 
 We proceed to check normality of the residuals with a qq-plot:
 
-```{r}
+```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=10, fig.height=4, fig.align='center'}
 qqnorm(fit2res)
 abline(0,sigma)
 ```
 
-The qq-plot suggests that the residuals by and large are normal. There are some issues in the upper tail suggesting that the distribution of the residuals may be slightly left-skewed, so the residuals are perhaps not perfectly normal. This is not a major concern though, as the normality assumption is not crucial for the validity of the model, as we also saw in the simulations in the previous question.
+The qq-plot shows that the residuals to a large extent are normal. There are some issues in the upper tail suggesting that the distribution of the residuals may be slightly left-skewed, so they are not perfectly normal. This is not a major concern though, as the assumption of normality is secondary for the validity of the model, as we also saw in the simulations in the previous question.
 
-We finally inspect the predicted random effects:
+We finally inspect the predicted random effects. As we have 75 random effects for participants, it makes sense to make a qq-plot for this random effect. With only 5 classes we may argue that a qq-plot for this random effect is less informative, but for completeness we plot this as well.
 
-```{r}
+```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=10, fig.height=4, fig.align='center'}
 library(lattice)
-fit2 |> ranef() |> dotplot()
-qqmath(ranef(fit2)$Participant[,1], main="Participant")
-qqmath(ranef(fit2)$Class[,1], main="Class")
+#fit2 %>% ranef() %>% dotplot() Jeg har udkommenteret denne del, da jeg ikke helt ved, om det giver mening. Helle bruger dette til at tjekke uafhængighed mellem intercept og slope, og vi har vel kun intercept. Men måske uafhængighed mellem participants og classes?
+
+par(mfrow=c(1,2))
+
+qqnorm(ranef(fit2)$Participant[,1], main="Participant")
+abline(0,tauP)
+
+qqnorm(ranef(fit2)$Class[,1], main="Class")
+abline(0,tauC)
+
+par(mfrow=c(1,1))
 ```
 
-To sum up, we find the model does a reasonable job in describing the data.
+The qq-plot to the left suggests that the random effects for participants are not perfectly normally distributed. Again this is not a major concern, as the assumption of normality is secondary for the validity of the model, and as we saw in the simulations in the previous question, the model is robust to deviations from normality. It is difficult to draw conclusions from the qq-plot to the right due to the few classes, but there are no immediate concerns. To sum up, we find the model does a decent job in describing the data.
 
 ## 8.
 
