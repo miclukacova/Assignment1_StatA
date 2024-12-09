@@ -428,8 +428,6 @@ The estimates are still almost unbiased and the confidence achieve accurate cove
 We follow the procedure given in chapter 5 of the lecture notes on mixed models. We start with a residual plot:
 
 ```{r}
-fit2 %>% plot()
-
 fit2res <- fit2 %>% residuals()
 fit2fitted <- fit2 %>% fitted()
 
@@ -442,18 +440,18 @@ ggplot(fit2Diag, aes(x = fitted, y = residuals)) +
   labs(x = "Fitted values", y = "Residuals")
 ```
 
-From the plot we are tempted to conclude that the residuals display an inexpedient pattern. We should however keep in mind, that the response is discrete while the fitted values are not. Hence, the lines in the plot we see, are to be expected. In particular for each response value, $a = 1,...,7$ we have a linear relationship between the fitted values and the residuals $Resdiual = a - Fitted$. The fitted line on the other hand suggests, that the residuals have around mean zero, and display no specific trend. We therefore accept this residual plot as reasonable, so the model seem to succesfully capture the mean structure of the data.
+From the plot we are tempted to conclude that the residuals display an inexpedient pattern. We should however keep in mind, that the response is discrete while the fitted values are not. Hence, the lines in the plot we see, are to be expected. In particular, for each response value, $a = 1,...,7$, we have a linear relationship between the fitted values and the residuals $Resdiual = a - Fitted$. The line fitted with `geom_smooth` suggests, that the residuals have mean around zero, and display no alarming trend. Hence, it seems reasonable to conclude that the model captures the mean structure of the data.
 
-We also check normality with a qq-plot:
+We proceed to check normality of the residuals with a qq-plot:
 
 ```{r}
 qqnorm(fit2res)
 abline(0,sigma)
 ```
 
-The residual plot seems to be in line with the normality assumption. There are some problems in the upper tail suggesting that the distribution of the residuals may be slightly left-skewed. This is not a major concern though, as the normality assumption is not crucial for the validity of the model.
+The qq-plot suggests that the residuals by and large are normal. There are some issues in the upper tail suggesting that the distribution of the residuals may be slightly left-skewed, so the residuals are perhaps not perfectly normal. This is not a major concern though, as the normality assumption is not crucial for the validity of the model, as we also saw in the simulations in the previous question.
 
-We now turn to inspect the predicted random effects.  They look OK. 
+We finally inspect the predicted random effects:
 
 ```{r}
 library(lattice)
