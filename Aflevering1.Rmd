@@ -32,7 +32,7 @@ X <- mvrnorm(n, c(0,0, 0), sigma)
 We will illustrate that the conditional distribution of $\begin{pmatrix} X_1 \\ X_2 \end{pmatrix} \vert X_3 = x_3$ is as expected by conditioning on $|X_3| = 0$. To approximate this ($X_3$ has a continuous distribution), we find the rows of $X$ for which $|X_3| \leq 0.05$:
 
 ```{r}
-cond <- which(abs(X[,3]) < 0.05) |> knitr::kable(col.names = " ")
+cond <- which(abs(X[,3]) < 0.05)
 ```
 
 We calculate the correlation of $X_1$ and $X_2$ for those $X_1$ and $X_2$ for which $|X_3| \leq 0.05$. 
