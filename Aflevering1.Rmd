@@ -127,6 +127,8 @@ layout <- matrix(c(1, 1, 2, 3), nrow = 2, byrow = TRUE)
 # Arrange the plots
 grid.arrange(p1, p2, p3, layout_matrix = layout)
 ```
+There is definetely a difference in the overall liking when looking at the product type. And it does seem that there might be a tendency for the liking to decrease as we move from products A to C. 
+
 To visualize if there could possibly be a difference in overall liking based on `Class` we calculate the average liking in each Class for both `Product`, `ProdType` and `ProdVersion` and plot them.
 ```{r, fig.width=10, fig.height=4, fig.align='center', echo=FALSE, warning=FALSE, message=FALSE}
 likingdata <- likingdata %>%
@@ -150,9 +152,9 @@ p3 <- ggplot(data = likingdata) +
 grid.arrange(p2, p3, ncol = 2)
 ```
 
-Based on the `ProdVersion`-plot it definitely seems that there might be a difference in the overall liking of the products based on `Class`. We are also interested in visualizing any potential effect of the different students on the liking of the products. So we draw 9 random participants and plot their `Liking` of the different product versions and colored according to the type of product.
+Based on the `ProdVersion`-plot it definitely seems that there might be a difference in the overall liking of the products based on `Class`. There also seems to be some variations for `ProdVersion`. We are also interested in visualizing any potential effect of the different students on the liking of the products. So we draw 9 random participants and plot their `Liking` of the different product versions and colored according to the type of product.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=10, fig.height=4, fig.align='center'}
+```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=10, fig.height=6.5, fig.align='center'}
 #Drawing 15 random participants:
 set.seed(1234567)
 p <- as.vector(sample(likingdata$Participant, size = 9))
@@ -182,6 +184,7 @@ We proceed with a brief description of the stastical model fitted in `fit1`. Let
 
 $$Y_{ijk} = \beta_0 + B_j^{P} + B_k^{C} + \beta_i + \epsilon_{ijk}$$
 
+<<<<<<< HEAD
 where $\beta_0$ is the global intercept corresponding to `ProductYoghurtA` and $\beta_i$ for $$i \in \{ProductYoghurtA, ProductYoghurtB, ProductYoghurtC, ProductCheeseA, ProductCheeseB, ProductCheeseC\}$$ describes the difference between the global intercept and each other product. Note, that there in fact is no $\beta_{ProductYoghurtA}$ in the model as this is included in $\beta_0$. The $B_j^{P} \overset{i.i.d} \sim \mathcal{N}(0, \tau_P^2 I)$ is the random parameter of participant $j = 1,...,75$ and $B_k^{C} \overset{i.i.d}\sim \mathcal{N}(0, \tau_C^2 I)$ is the random parameter of class $k=1,...,5$. Finally, $\epsilon_{ijk} \overset{i.i.d}\sim \mathcal{N}(0, \sigma^2)$ is the residual for participant $j$ in class $k$, testing product $i$. We assume independence between all $B_j^{P}$, $B_k^{C}$ and $\epsilon_{ijk}$.
 
 We model participant and class as random effects since these variables are random samples from a larger population and we are as such not interested in these specific observations, only the variance they add to the model through dependence structures. We model `Product` as a fixed effect as we want to estimate, how the different products effect the overall liking.
@@ -189,20 +192,59 @@ We model participant and class as random effects since these variables are rando
 
 ## 2.
 
-The formula for the correlation for two random variables $X$ and $Y$ is $\frac{Cov(X,Y)}{\sqrt{(VY\cdot VY)}}$. By the independence of the random variables in the statistical model for `fit1` we get that $VY_{ijk}=\tau_{\text{par}}^2+\tau_{\text{class}}^2+ \sigma^2$ for all $i,j$ and $k$. We now consider the two different cases:
+The formula for the correlation for two random variables $X$ and $Y$ is $\frac{Cov(X,Y)}{\sqrt{(VY\cdot VY)}}$. By the independence of the random variables in the statistical model for `fit1` we get that $VY_{ijk}=\tau_{P}^2+\tau_{C}^2+ \sigma^2$ for all $i,j$ and $k$. We now consider the two different cases:
 
-If we look at the correlation between two observations for the same participants $Y_{ijk}$ and $Y_{ljk}$, we have independence between all random variables in the statistical model, except for $B_{j}^{\text{par}}$ and $B_{k}^{\text{class}}$, which are not independent of themselves. We can use this alongside the bilinear properties of the covariance to see:
+If we look at the correlation between two observations for the same participants $Y_{ijk}$ and $Y_{ljk}$, we have independence between all random variables in the statistical model, except for $B_{j}^{P}$ and $B_{k}^{C}$, which are not independent of themselves. We can use this alongside the bilinear properties of the covariance to see:
 $$
-Cov(Y_{ijk},Y_{ljk}) = Cov(B_{j}^{\text{par}},B_{j}^{\text{par}}) + Cov(B_{k}^{\text{class}},B_{k}^{\text{class}}) = V(B_{j}^{\text{par}}) + V(B_{k}^{\text{class}}) = \tau_{\text{par}}^2+\tau_{\text{class}}^2
+Cov(Y_{ijk},Y_{ljk}) = Cov(B_{j}^{P},B_{j}^{P}) + Cov(B_{k}^{C},B_{k}^{C}) = V(B_{j}^{P}) + V(B_{k}^{C}) = \tau_{P}^2+\tau_{C}^2
 $$
-Thus we get that $cor(Y_{ijk},Y_{ljk}) = \frac{\tau_{\text{par}}^2+\tau_{\text{class}}^2}{\tau_{\text{par}}^2+\tau_{\text{class}}^2+\sigma^2}$ for observations from the same participant.
+Thus we get that $cor(Y_{ijk},Y_{ljk}) = \frac{\tau_{P}^2+\tau_{C}^2}{\tau_{P}^2+\tau_{C}^2+\sigma^2}$ for observations from the same participant. Plugging in the estimates from `fit1`and `fit2` we get:
+```{r, echo = FALSE, warning=FALSE}
+tauP1 <- data.frame(VarCorr(fit1))$sdcor[1]
+tauC1 <- data.frame(VarCorr(fit1))$sdcor[2]
+sigma1 <- data.frame(VarCorr(fit1))$sdcor[3]
 
-If we now look at the correlation between observations from the same class, but not the same participant, we have independence between all random variables in the model except for $B_{k}^{\text{class}}$. So by a similar argument to that above we get:
+tauP2 <- data.frame(VarCorr(fit2))$sdcor[1]
+tauC2 <- data.frame(VarCorr(fit2))$sdcor[2]
+sigma2 <- data.frame(VarCorr(fit2))$sdcor[3]
+
+fit1_cp <- (tauP1^2 + tauC1^2)/(tauP1^2 + tauC1^2 + sigma1^2)
+fit2_cp <- (tauP2^2 + tauC2^2)/(tauP2^2 + tauC2^2 + sigma2^2)
+
+data <- data.frame(
+  `Cor(Y_ijk, Y_ljk)` = c(fit1_cp, fit2_cp),
+  row.names = c("fit1", "fit2")
+)
+
+knitr::kable(data, col.names = c("Cor(Y_ijk, Y_ljk)"))
+```
+
+
+If we now look at the correlation between observations from the same class, but not the same participant, we have independence between all random variables in the model except for $B_{k}^{C}$. So by a similar argument to that above we get:
 $$
-cor(Y_{ijk},Y_{lpk})=\frac{\tau_{\text{class}}^2}{\tau_{\text{par}}^2+\tau_{\text{class}}^2+\sigma^2}
+cor(Y_{ijk},Y_{lpk})=\frac{\tau_{C}^2}{\tau_{P}^2+\tau_{C}^2+\sigma^2}
 $$
 
-*Skal vi ikke rent faktisk beregne estimaterne her ud fra de to modeller?*
+Plotting in the estimates of the standard deviations from `fit1` and `fit2` we get:
+```{r, echo = FALSE, warning=FALSE}
+tauP1 <- data.frame(VarCorr(fit1))$sdcor[1]
+tauC1 <- data.frame(VarCorr(fit1))$sdcor[2]
+sigma1 <- data.frame(VarCorr(fit1))$sdcor[3]
+
+tauP2 <- data.frame(VarCorr(fit2))$sdcor[1]
+tauC2 <- data.frame(VarCorr(fit2))$sdcor[2]
+sigma2 <- data.frame(VarCorr(fit2))$sdcor[3]
+
+fit1_cp <- (tauP1^2)/(tauP1^2 + tauC1^2 + sigma1^2)
+fit2_cp <- (tauP2^2)/(tauP2^2 + tauC2^2 + sigma2^2)
+
+data <- data.frame(
+  `Cor(Y_ijk, Y_ljk)` = c(fit1_cp, fit2_cp),
+  row.names = c("fit1", "fit2")
+)
+
+knitr::kable(data, col.names = c("Cor(Y_ijk, Y_lpk)"))
+```
 
 ## 3. 
 
@@ -282,13 +324,13 @@ names(deltasim) <- c("est","lower","upper")
 To see if $\hat{\delta}$ is approximately an unbiased estimator of $\delta$, we check whether the mean of $\hat{\delta}$ is approximately equal to $\delta$.
 ```{r}
 delta <- fixef(fit2)[4]
-unname(mean(deltasim$est) - delta)
+unname(mean(deltasim$est) - delta) %>% knitr::kable(col.names = " ")
 ```
 This is close to 0, so $\hat{\delta}$ seems unbiased.
 
 To check if we obtain the desired coverage, we simply calculate what percentage of the simulated intervals cover our true $\delta$-vaule.
 ```{r}
-sum(delta < deltasim$upper & delta > deltasim$lower)/2000
+mean(deltasim$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim$upper) |> knitr::kable(col.names = " ")
 ```
 As we can see, we obtain approximately the desired coverage.
 
@@ -347,7 +389,7 @@ mean(deltasim2$est - fixef(fit2)[4]) |> knitr::kable(col.names = " ")
 And the coverage:
 
 ```{r}
-mean(deltasim2$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim2$upper) |> knitr::kable(col.names = " ")
+mean(deltasim2$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim2$upper) %>% knitr::kable(col.names = " ")
 ```
 
 And make a histogram of the estimates
@@ -407,7 +449,8 @@ mean(deltasim3$est - fixef(fit2)[4]) |> knitr::kable(col.names = " ")
 And the coverage:
 
 ```{r}
-mean(deltasim3$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim3$upper) |> knitr::kable(col.names = " ")
+mean(deltasim3$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim3$upper) |> 
+  knitr::kable(col.names = " ")
 ```
 
 And make a histogram of the estimates
@@ -539,13 +582,13 @@ mean(deltasim4$est - fixef(fit2)[4]) |> knitr::kable(col.names = " ")
 And coverage:
 
 ```{r}
-mean(deltasim4$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim4$upper) |> knitr::kable(col.names = " ")
+mean(deltasim4$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim4$upper) %>% knitr::kable(col.names = " ")
 ```
 
 So we still obtain the desired coverage and it seems that $\hat{\delta}$ is still an unbiased estimator, regardless of the discretization of the predictor-variables.
 
 To further investigate whether the two estimators behave the same, we plot a histogram of their distributions.
-```{r}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 data.frame(deltasim4) %>% 
   ggplot() +
   geom_histogram(aes(x = est, y = ..density.., fill = "discrete"), 
