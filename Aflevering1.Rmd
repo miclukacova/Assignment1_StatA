@@ -190,7 +190,7 @@ We model participant and class as random effects since these variables are rando
 
 ## 2.
 
-The formula for the correlation for two random variables $X$ and $Y$ is $\frac{Cov(X,Y)}{\sqrt{(VY\cdot VY)}}$. By the independence of the random variables in the statistical model for `fit1` we get that $VY_{ijk}=\tau_{P}^2+\tau_{C}^2+ \sigma^2$ for all $i,j$ and $k$. We now consider the two different cases:
+The formula for the correlation for two random variables $X$ and $Y$ is $\frac{Cov(X,Y)}{\sqrt{(VX\cdot VY)}}$. By the independence of the random variables in the statistical model for `fit1` we get that $VY_{ijk}=\tau_{P}^2+\tau_{C}^2+ \sigma^2$ for all $i,j$ and $k$. We now consider the two different cases:
 
 If we look at the correlation between two observations for the same participants $Y_{ijk}$ and $Y_{ljk}$, we have independence between all random variables in the statistical model, except for $B_{j}^{P}$ and $B_{k}^{C}$, which are not independent of themselves. We can use this alongside the bilinear properties of the covariance to see:
 $$
@@ -214,7 +214,7 @@ data <- data.frame(
   row.names = c("fit1", "fit2")
 )
 
-knitr::kable(data, col.names = c("Cor(Y_ijk, Y_ljk)"))
+knitr::kable(data, col.names = c("$\\text{Cor}(Y_{ijk}, Y_{ljk})$"))
 ```
 
 
@@ -233,24 +233,24 @@ tauP2 <- data.frame(VarCorr(fit2))$sdcor[1]
 tauC2 <- data.frame(VarCorr(fit2))$sdcor[2]
 sigma2 <- data.frame(VarCorr(fit2))$sdcor[3]
 
-fit1_cp <- (tauP1^2)/(tauP1^2 + tauC1^2 + sigma1^2)
-fit2_cp <- (tauP2^2)/(tauP2^2 + tauC2^2 + sigma2^2)
+fit1_cp <- (tauC1^2)/(tauP1^2 + tauC1^2 + sigma1^2)
+fit2_cp <- (tauC2^2)/(tauP2^2 + tauC2^2 + sigma2^2)
 
 data <- data.frame(
   `Cor(Y_ijk, Y_ljk)` = c(fit1_cp, fit2_cp),
   row.names = c("fit1", "fit2")
 )
 
-knitr::kable(data, col.names = c("Cor(Y_ijk, Y_lpk)"))
+knitr::kable(data, col.names = c("$\\text{Cor}(Y_{ijk}, Y_{lpk})$"))
 ```
 
 ## 3. 
 
-The factor `Product` is the interaction of the two factors `ProdVersion` and `ProdType`, therefore the subspace spanned by `ProdVersion` and `ProdType` is included in the subspace spanned by `Product`, and fit2 is thus a submodel of fit1. In other words if we know the `Product` we also know the `ProdVersion` and `ProdType`.
+The factor `Product` is the interaction of the two factors `ProdVersion` and `ProdType`, therefore the subspace spanned by `ProdVersion` and `ProdType` is included in the subspace spanned by `Product`, and fit2 is thus a submodel of fit1. In other words if we know the value of `Product` we also know the value of `ProdVersion` and of `ProdType`.
 
 In `fit1` we estimate $6$ different fixed effects parameters, 1 intercept parameter, and then $5$ additional parameters for each additional interaction level between `ProdVersion` and `ProdType`. In `fit2` we estimate $4$ fixed effect parameters, $1$ intercept parameter, $2$ for each additional `ProdVersion` level and $1$ for the last level of `ProdType`. We assume no interaction effects between the two factors `ProdVersion` and `ProdType` in fit2. 
 
-Letting $L_0$ denote the subspace of $\mathbb{R}^n$ spanned by the model matrix from `fit2` and $L_X$ denote the subspace of $\mathbb{R}^n$ spanned by the model matrix from `fit1`, we can test the hypothesis of $EY \in L_0 \subseteq L_X$ with the likelihood ratio statistic. The test relies on asymptotic results which we use without further arguments. We perform the test by use of the anova command: 
+Letting $L_0$ denote the subspace of $\mathbb{R}^n$ spanned by the model matrix from `fit2` and $L_X$ denote the subspace of $\mathbb{R}^n$ spanned by the model matrix from `fit1`, we can test the hypothesis of $EY \in L_0 \subseteq L_X$ with the likelihood ratio statistic. The test relies on asymptotic results, which we use without further arguments. We perform the test by use of the anova command: 
 
 ```{r}
 anova(fit1,fit2)
@@ -284,7 +284,7 @@ From the confidence intervals we see no strong evidence that the children like `
 
 
 ## 5. 
-We use the code from the hint to run 2000 simulations from `fit2`. We first extract the modelmatrices $X$ and $Z$ and the parameter estimates for $\beta, \tau_P^2, \tau_C^2$ and $\sigma^2$. We then create an empty $3\times2000$ matrix to store the simulations of $\hat{\delta}$ and the corresponding Wald confidence bands. Then we fill out the entries of the matrix with a for loop. So for each $i$ we simulate 75, 5 and 450 values from $B^P, B^C$ and $\epsilon$ respectively, and use those to create a new set of y-values $y = X\beta + Z(B^P + B^C) + \epsilon$. We then fit a new model specified as `fit2` and calculate corresponding confidence intervals using the Wald-method.
+We use the code from the hint to run 2000 simulations from `fit2`. We first extract the modelmatrices $X$ and $Z$ and the parameter estimates for $\beta, \tau_P^2, \tau_C^2$ and $\sigma^2$. We then create an empty $2000\times 3$ matrix to store the simulations of $\hat{\delta}$ and the corresponding Wald confidence bands. Then we fill out the entries of the matrix with a for loop. So for each $i$ we simulate 75, 5 and 450 values from $B^P, B^C$ and $\epsilon$ respectively, and use those to create a new set of y-values $y = X\beta + Z(B^P + B^C) + \epsilon$. We then fit a new model specified as `fit2` and calculate corresponding confidence intervals using the Wald-method.
 
 ```{r, warning=FALSE, message=FALSE}
 library(MASS)
@@ -349,6 +349,7 @@ c_eps <- sigma / sqrt(3)
 We modify the simulation from question 5 to draw from the t-distribution. The variables drawn are scaled by the scaling factors defined above. 
 
 ```{r, message = FALSE, warning = FALSE}
+set.seed(174)
 M <- 2000
 n_eps <- nrow(likingdata)
 n_par <- unique(likingdata$Participant) |> length()
@@ -390,7 +391,7 @@ And the coverage:
 mean(deltasim2$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim2$upper) %>% knitr::kable(col.names = " ")
 ```
 
-And make a histogram of the estimates
+And make a histogram of the estimates:
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 data.frame(deltasim2) %>% 
@@ -401,11 +402,11 @@ data.frame(deltasim2) %>%
              color = "darkred", linetype = "dashed", size = 1, alpha = 0.8) 
 ```
 
-The estimates are still practically unbiased and the confidence intervals achieve accurate coverage. 
+The estimates are still practically unbiased, the confidence intervals achieve quite accurate coverage, and the distribution looks relatively normal. 
 
 ### Simulating from the exponential distribution
 
-The mean of an exponentially distributed random variable $X$ with rate equal to $1$, is $E(X) = 1$. And the variance of an is $\frac{1}{\lambda^2} = 1$.  In order to achieve a mean of $0$ and  a variance of $\sigma^2$ we would therefore need to shift and scale $X \sim exp(1)$ with
+The mean of an exponentially distributed random variable $X$ with rate $\lambda = 1$, is $E(X) = 1$. And the variance is $\frac{1}{\lambda^2} = 1$.  In order to achieve a mean of $0$ and  a variance of $\sigma^2$ we would therefore need to shift and scale $X \sim \exp(1)$ with
 
 $$\sigma^2= V(c \cdot X - k) = c^2  \Leftrightarrow c = \sigma$$
 and
@@ -420,6 +421,7 @@ c_eps <- sigma
 ```
 
 ```{r, message = FALSE, warning = FALSE}
+set.seed(765)
 deltasim3 <- matrix(NA,M,3)
 
 for (i in 1:M){
@@ -451,7 +453,7 @@ mean(deltasim3$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim3$upper) |>
   knitr::kable(col.names = " ")
 ```
 
-And make a histogram of the estimates
+And make a histogram of the estimates:
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 data.frame(deltasim3) %>% 
@@ -462,7 +464,9 @@ data.frame(deltasim3) %>%
              color = "darkred", linetype = "dashed", size = 1, alpha = 0.8) 
 ```
 
-The estimates still appear unbiased and the confidence intervals achieve accurate coverage. We can conclude that the model estimates and confidence intervals are robust to the type of distribution as long as the mean and variance are correctly specified. 
+The estimates still appear unbiased, the confidence intervals achieve accurate coverage and the distribution again looks normal. 
+
+We can conclude that the model estimates and confidence intervals are robust to various types of distribution of the random effects and noise, as long as the mean and variance structure is correctly specified. 
 
 ## 7.
 
@@ -523,11 +527,11 @@ p4 <- ggplot(simDiagNew4, aes(x = fitted, y = residuals)) +
 grid.arrange(p1, p2, p3, p4, ncol = 2)
 ```
 
-Note, we have discretized the response in the simulations to get a more similar picture of the residuals. We have no other restrictions on the predictions, so the model simulates responses outside the range 1 to 7. This gives more lines that the original residual plot, but other than this, the residual plots for the simulations resemble the residual plot for the original model. Hence, it seems reasonable to conclude that the model captures the mean structure of the data.
+Note, we have discretized the response in the simulations to get more comparable residual plots. We have no other restrictions on the predictions, so the model simulates responses outside the range 1 to 7. This gives more lines than in the original residual plot, but other than this, the residual plots for the simulations resemble the residual plot for the original model. Hence, it seems reasonable to conclude that the model captures the mean structure of the data.
 
 We proceed to check normality of the residuals with a qq-plot:
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=8, fig.height=6, fig.align='center'}
+```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=7, fig.height=5, fig.align='center'}
 qqnorm(fit2res)
 abline(0,sigma)
 ```
