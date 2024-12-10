@@ -183,8 +183,6 @@ fit2 <- lmer(Liking ~ ProdVersion + ProdType + (1|Participant) + (1|Class), data
 We proceed with a brief description of the stastical model fitted in `fit1`. Let $Y_{ijk}$ define the response of participant $j$ in class $k$ testing product $i$. The first model is then defined by
 
 $$Y_{ijk} = \beta_0 + B_j^{P} + B_k^{C} + \beta_i + \epsilon_{ijk}$$
-
-<<<<<<< HEAD
 where $\beta_0$ is the global intercept corresponding to `ProductYoghurtA` and $\beta_i$ for $$i \in \{ProductYoghurtA, ProductYoghurtB, ProductYoghurtC, ProductCheeseA, ProductCheeseB, ProductCheeseC\}$$ describes the difference between the global intercept and each other product. Note, that there in fact is no $\beta_{ProductYoghurtA}$ in the model as this is included in $\beta_0$. The $B_j^{P} \overset{i.i.d} \sim \mathcal{N}(0, \tau_P^2 I)$ is the random parameter of participant $j = 1,...,75$ and $B_k^{C} \overset{i.i.d}\sim \mathcal{N}(0, \tau_C^2 I)$ is the random parameter of class $k=1,...,5$. Finally, $\epsilon_{ijk} \overset{i.i.d}\sim \mathcal{N}(0, \sigma^2)$ is the residual for participant $j$ in class $k$, testing product $i$. We assume independence between all $B_j^{P}$, $B_k^{C}$ and $\epsilon_{ijk}$.
 
 We model participant and class as random effects since these variables are random samples from a larger population and we are as such not interested in these specific observations, only the variance they add to the model through dependence structures. We model `Product` as a fixed effect as we want to estimate, how the different products effect the overall liking.
