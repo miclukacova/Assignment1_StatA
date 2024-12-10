@@ -559,7 +559,7 @@ The qq-plot to the left suggests that the random effects for participants are no
 
 ## 8.
 
-In order to examine how discretization of the response affects the LMM-based estimator for $\delta$, we simulate from the `fit2` model, discretize the simulations with the `round` function, fit a model on the simulated discretized data and extract the estimates and the CI boundaries. 
+In order to examine how discretization of the response affects the LMM-based estimator for $\delta$, we simulate from the `fit2` model, discretize the simulations, fit a model on the simulated discretized data and extract the estimates and the CI boundaries. The discretization can be done in various ways. One approach is to use the `round` function, which is done below. We call this Method 1. 
 
 ```{r, message = FALSE, warning = FALSE}
 deltasim4 <- matrix(NA,M,3)
@@ -575,19 +575,42 @@ deltasim4 <- deltasim4 |> data.frame()
 names(deltasim4) <- c("est","lower","upper")
 ```
 
-We calculate the bias:
+Since the model simulates data outside the range of $(1,7)$, the discretized data also has integer values below $1$ and above $7$. A way of discretizing data and ensuring that the discretized values fall within the range of the predictor variable, is to scale and shift the data before rounding, we do this in the following. We call this Method 2. 
 
-```{r}
-mean(deltasim4$est - fixef(fit2)[4]) |> knitr::kable(col.names = " ")
+```{r, message = FALSE, warning = FALSE}
+deltasim5 <- matrix(NA,M,3)
+
+for (i in 1:M){
+  y <- simulate(fit2)$sim_1 
+  y <- (y - min(y))/(max(y) - min(y)) * (7 - 1) + 1 # shift and scaling
+  y <- y |> round()
+  lmm2 <- lmer(y ~ ProdVersion + ProdType + (1|Participant) + (1|Class), data=likingdata)
+  deltasim5[i,1] <- fixef(lmm2)[4]
+  deltasim5[i,2:3] <- (lmm2 |> confint(method="Wald"))[7,]
+}
+
+deltasim5 <- deltasim5 |> data.frame()
+names(deltasim5) <- c("est","lower","upper")
+```
+
+We calculate the bias for both approaches:
+
+```{r, echo = FALSE}
+tibble(" " = c("Method 1", "Method 2"),
+       "Bias" = c(mean(deltasim4$est - fixef(fit2)[4]),
+       mean(deltasim5$est - fixef(fit2)[4]))) |> knitr::kable()
 ```
 
 And coverage:
 
 ```{r}
-mean(deltasim4$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim4$upper) %>% knitr::kable(col.names = " ")
+tibble(" " = c("Method 1", "Method 2"),
+       "Coverage" = c(mean(deltasim4$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim4$upper),
+                  mean(deltasim5$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim5$upper))) |>
+  knitr::kable()
 ```
 
-So we still obtain the desired coverage and it seems that $\hat{\delta}$ is still an unbiased estimator, regardless of the discretization of the predictor-variables.
+We still obtain the desired coverage and it seems that $\hat{\delta}$ is still an unbiased estimator, regardless of the discretization of the predictor-variables.
 
 To further investigate whether the two estimators behave the same, we plot a histogram of their distributions.
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
@@ -601,9 +624,22 @@ data.frame(deltasim4) %>%
   geom_vline(xintercept = fixef(fit2)[4], 
              color = "darkred", linetype = "dashed", size = 1, alpha = 0.8) +
   scale_fill_manual(values = c("discrete" = "steelblue", "continuous" = "darkseagreen4"))
+
+data.frame(deltasim5) %>% 
+  ggplot() +
+  geom_histogram(aes(x = est, y = ..density.., fill = "discrete"), 
+                 color = "white", alpha = 0.5, bins = 30) +
+  geom_histogram(data = data.frame(deltasim), 
+                 aes(x = est, y = ..density.., fill = "continuous"), 
+                 color = "white", alpha = 0.5, bins = 30) +
+  geom_vline(xintercept = fixef(fit2)[4], 
+             color = "darkred", linetype = "dashed", size = 1, alpha = 0.8) +
+  scale_fill_manual(values = c("discrete" = "steelblue", "continuous" = "darkseagreen4"))
 ```
 
 Their distributions seem fairly similar as well. Although the one without discretization has smaller variance and is thus slightly more peaked. But overall it seems that both methods provide descent estimators of $\delta$.
+
+
 
 
 
