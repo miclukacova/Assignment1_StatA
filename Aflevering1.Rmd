@@ -53,7 +53,7 @@ To visualize the conditional distribution of $X_1$ and $X_2$ we create the two s
 grid.arrange(
 ggplot()+
   geom_point(aes(x = X[cond,1], y = X[cond,2]), alpha = 0.2, col = "steelblue")+
-  labs(x = "X1", y = "X2", title = "Conditional on |X3| < 0.1 "),
+  labs(x = "X1", y = "X2", title = "Conditional on |X3| < 0.05 "),
 ggplot()+
   geom_point(aes(x = X[1:10000,1], y = X[1:10000,2]), alpha = 0.2, col = "steelblue")+
   labs(x = "X1", y = "X2", title = "Unconditional"),
@@ -92,7 +92,8 @@ ggplot()+
   labs(x = "X2", y = "density", title = "Histogram of X2"),
 nrow = 1)
 ```
-Notice also how the variance reduces as we condition, this is also to be expected as we gain further information. 
+
+As expected, the variance reduces when we condition, since we have more information.
 
 From example 2.5 we know that the variance matrix in the conditional distribution of Gaussian random variables does not depend on the value of the conditioning variable. Having illustrated that the two random variables $X_1  \vert X_3 = 0$ and $X_2 \vert X_3 = 0$ are independent and with the variance we expect, this will also be true for all other values of $X_3$. 
 
@@ -138,6 +139,7 @@ likingdata <- likingdata %>%
 
 p2 <- ggplot(data = likingdata) + 
   geom_point(aes(x = ProdType, y = mean_liking, color = Class), size = 2) +
+  ylab("Mean liking") +
   ggtitle("Mean liking in each Class for ProdType")
 
 likingdata <- likingdata %>%
@@ -146,7 +148,8 @@ likingdata <- likingdata %>%
   ungroup()
 
 p3 <- ggplot(data = likingdata) + 
-  geom_point(aes(x = ProdVersion, y = mean_liking, color = Class), size = 2)+
+  geom_point(aes(x = ProdVersion, y = mean_liking, color = Class), size = 2) +
+  ylab("Mean liking") +
   ggtitle("Mean liking in each Class for ProdVersion")
 
 grid.arrange(p2, p3, ncol = 2)
@@ -183,9 +186,9 @@ fit2 <- lmer(Liking ~ ProdVersion + ProdType + (1|Participant) + (1|Class), data
 We proceed with a brief description of the stastical model fitted in `fit1`. Let $Y_{ijk}$ define the response of participant $j$ in class $k$ testing product $i$. The first model is then defined by
 
 $$Y_{ijk} = \beta_0 + B_j^{P} + B_k^{C} + \beta_i + \epsilon_{ijk}$$
-where $\beta_0$ is the global intercept corresponding to `ProductYoghurtA` and $\beta_i$ for $$i \in \{ProductYoghurtA, ProductYoghurtB, ProductYoghurtC, ProductCheeseA, ProductCheeseB, ProductCheeseC\}$$ describes the difference between the global intercept and each other product. Note, that there in fact is no $\beta_{ProductYoghurtA}$ in the model as this is included in $\beta_0$. The $B_j^{P} \overset{i.i.d} \sim \mathcal{N}(0, \tau_P^2 I)$ is the random parameter of participant $j = 1,...,75$ and $B_k^{C} \overset{i.i.d}\sim \mathcal{N}(0, \tau_C^2 I)$ is the random parameter of class $k=1,...,5$. Finally, $\epsilon_{ijk} \overset{i.i.d}\sim \mathcal{N}(0, \sigma^2)$ is the residual for participant $j$ in class $k$, testing product $i$. We assume independence between all $B_j^{P}$, $B_k^{C}$ and $\epsilon_{ijk}$.
+where $\beta_0$ is the global intercept corresponding to `ProductYoghurtA` and $\beta_i$ for $i \in \{$ `ProductYoghurtA`, `ProductYoghurtB`, `ProductYoghurtC`, `ProductCheeseA`, `ProductCheeseB`, `ProductCheeseC` $\}$ describes the difference between the global intercept and each other product. We have included `ProductYoghurtA` in the list for proper indexation, but in fact there is no $\beta_{ProductYoghurtA}$ in the model as this is $\beta_0$. The $B_j^{P} \overset{i.i.d} \sim \mathcal{N}(0, \tau_P^2 I)$ is the random parameter of participant $j = 1,...,75$ and $B_k^{C} \overset{i.i.d}\sim \mathcal{N}(0, \tau_C^2 I)$ is the random parameter of class $k=1,...,5$. Finally, $\epsilon_{ijk} \overset{i.i.d}\sim \mathcal{N}(0, \sigma^2)$ is the residual for participant $j$ in class $k$, testing product $i$. We assume independence between all $B_j^{P}$, $B_k^{C}$ and $\epsilon_{ijk}$.
 
-We model participant and class as random effects since these variables are random samples from a larger population and we are as such not interested in these specific observations, only the variance they add to the model through dependence structures. We model `Product` as a fixed effect as we want to estimate, how the different products effect the overall liking.
+We model participant and class as random effects since they represent random samples from a larger population, so we are only concerned with the variance they add to the model estimates. In contrast, we model `Product` as a fixed effect to estimate how the different products influence the overall liking.
 
 
 ## 2.
@@ -196,7 +199,9 @@ If we look at the correlation between two observations for the same participants
 $$
 Cov(Y_{ijk},Y_{ljk}) = Cov(B_{j}^{P},B_{j}^{P}) + Cov(B_{k}^{C},B_{k}^{C}) = V(B_{j}^{P}) + V(B_{k}^{C}) = \tau_{P}^2+\tau_{C}^2
 $$
-Thus we get that $cor(Y_{ijk},Y_{ljk}) = \frac{\tau_{P}^2+\tau_{C}^2}{\tau_{P}^2+\tau_{C}^2+\sigma^2}$ for observations from the same participant. Plugging in the estimates from `fit1`and `fit2` we get:
+
+Thus we get that $$cor(Y_{ijk},Y_{ljk}) = \frac{\tau_{P}^2+\tau_{C}^2}{\tau_{P}^2+\tau_{C}^2+\sigma^2}$$ for observations from the same participant. Plugging in the estimates from `fit1` and `fit2` we get:
+
 ```{r, echo = FALSE, warning=FALSE}
 tauP1 <- data.frame(VarCorr(fit1))$sdcor[1]
 tauC1 <- data.frame(VarCorr(fit1))$sdcor[2]
@@ -223,7 +228,7 @@ $$
 cor(Y_{ijk},Y_{lpk})=\frac{\tau_{C}^2}{\tau_{P}^2+\tau_{C}^2+\sigma^2}
 $$
 
-Plotting in the estimates of the standard deviations from `fit1` and `fit2` we get:
+Plugging in the estimates of the standard deviations from `fit1` and `fit2` we get:
 ```{r, echo = FALSE, warning=FALSE}
 tauP1 <- data.frame(VarCorr(fit1))$sdcor[1]
 tauC1 <- data.frame(VarCorr(fit1))$sdcor[2]
@@ -246,9 +251,9 @@ knitr::kable(data, col.names = c("$\\text{Cor}(Y_{ijk}, Y_{lpk})$"))
 
 ## 3. 
 
-The factor `Product` is the interaction of the two factors `ProdVersion` and `ProdType`, therefore the subspace spanned by `ProdVersion` and `ProdType` is included in the subspace spanned by `Product`, and fit2 is thus a submodel of fit1. In other words if we know the value of `Product` we also know the value of `ProdVersion` and of `ProdType`.
+The factor `Product` is the interaction of the two factors `ProdVersion` and `ProdType`, therefore the subspace spanned by `ProdVersion` and `ProdType` is included in the subspace spanned by `Product`, and `fit2` is thus a submodel of `fit1`. In other words if we know the value of `Product` we also know the value of `ProdVersion` and of `ProdType`.
 
-In `fit1` we estimate $6$ different fixed effects parameters, 1 intercept parameter, and then $5$ additional parameters for each additional interaction level between `ProdVersion` and `ProdType`. In `fit2` we estimate $4$ fixed effect parameters, $1$ intercept parameter, $2$ for each additional `ProdVersion` level and $1$ for the last level of `ProdType`. We assume no interaction effects between the two factors `ProdVersion` and `ProdType` in fit2. 
+In `fit1` we estimate $6$ different fixed effects parameters, 1 intercept parameter, and then $5$ additional parameters for each additional interaction level between `ProdVersion` and `ProdType`. In `fit2` we estimate $4$ fixed effect parameters, $1$ intercept parameter, $2$ for each additional `ProdVersion` level and $1$ for the last level of `ProdType`. We assume no interaction effects between the two factors `ProdVersion` and `ProdType` in `fit2`. 
 
 Letting $L_0$ denote the subspace of $\mathbb{R}^n$ spanned by the model matrix from `fit2` and $L_X$ denote the subspace of $\mathbb{R}^n$ spanned by the model matrix from `fit1`, we can test the hypothesis of $EY \in L_0 \subseteq L_X$ with the likelihood ratio statistic. The test relies on asymptotic results, which we use without further arguments. We perform the test by use of the anova command: 
 
@@ -260,19 +265,20 @@ The test returns a p-value of 0.7, so with a significance level of 0.05 we canno
 
 ## 4. 
 
-To test whether the children like all three versions of the product equally well, we can check that none of the fixed effects are significantly different from each other. That is, we test the two hypotheses: $H_{01}: \beta_{ProdVersion} = 0$ and $H_{02}: \beta_{ProdType} = 0$. Both of these hypotheses are tested using the `drop1()` function with `test = "Chisq"`:
+To test whether the children like all three versions of the product equally well, we check that none of the fixed effects are significantly different from each other. That is, we test the two hypotheses: $$H_{01}: \beta_{ProdVersion} = 0, \qquad H_{02}: \beta_{ProdType} = 0$$. Both hypotheses are tested using the `drop1()` function with `test = "Chisq"`:
 
 ```{r}
 drop1(fit2, test = "Chisq") 
 ```
 
-We get a p-value of `0.011` for `ProdVersion` and a p-value of `< 2e-16` for `ProdType`, so on a 5% significance level, we reject both null hypotheses. This means, there is both evidence that the children do not like all three versions equally well and that the children do not like cheese and yoghurt equally well. We should keep in mind, that the chisquare test is an asymptotic test, and we do not know if the asymptotics have set in, so we should be careful drawing conclusions, especially for `ProdVersion` as this is only borderline significant. However, based on the tests we continue to examine in what way the preferences differ.
+We get a p-value of `0.011` for `ProdVersion` and a p-value of `< 2e-16` for `ProdType`, implying that on a 5% significance level, we reject both null hypotheses. This means, there is evidence that the children have a preference for both the version of the product and for the type of the product. We should keep in mind, that the chisquare test is an asymptotic test, and we do not know if the asymptotics have set in, so we should be careful drawing conclusions, especially for `ProdVersion` as this is only borderline significant. However, based on the tests we continue to examine the preferences.
 
-From the model coefficients, we see evidence that the children like yoghurt better than cheese. To check which product version the children like better, we determine the 95%-profile likelihood confidence interval for the model parameters:
+It is evident from the model coefficients that the children like yoghurt better than cheese. To check which product version the children like better, we determine the 95%-profile likelihood confidence interval for the model parameters:
 
 ```{r}
 confint(fit2, oldNames = FALSE)
 ```
+
 The children seem to like `ProdVersionA` better than `ProdVersionC` (CI for `ProdVersionC` does not include 0), but there is not strong evidence that they like `ProdVersionA` over `ProdVersionB` (CI for `ProdVersionB` includes 0). To investigate if the children like `ProdVersionB` better than `ProdVersionC`, we refit the model with `ProdVersionB` as the reference level and determine the 95%-profile likelihood confidence intervals in this parametrization:
 
 ```{r echo = FALSE}
@@ -280,11 +286,11 @@ relevelfit <- lmer(Liking ~ relevel(ProdVersion, ref = 2) + ProdType + (1 | Part
 confint(relevelfit, oldNames = FALSE)
 ```
 
-From the confidence intervals we see no strong evidence that the children like `ProductVersionB` better than `ProductVersionC`. To sum up: On a 95% significance level the children like `ProductVersionA` better than `ProductVersionC`, but there is not enough evidence that the children like `ProductVersionA` better than `ProductVersionB` or `ProductVersionB` better than `ProductVersionC`, according to this model.
+From the confidence intervals there is not enough evidence that the children like `ProductVersionB` better than `ProductVersionC`. To sum up: On a 95% significance level the children like `ProductVersionA` better than `ProductVersionC`, but there is not enough evidence that the children like `ProductVersionA` better than `ProductVersionB` or `ProductVersionB` better than `ProductVersionC`, according to this model.
 
 
 ## 5. 
-We use the code from the hint to run 2000 simulations from `fit2`. We first extract the modelmatrices $X$ and $Z$ and the parameter estimates for $\beta, \tau_P^2, \tau_C^2$ and $\sigma^2$. We then create an empty $2000\times 3$ matrix to store the simulations of $\hat{\delta}$ and the corresponding Wald confidence bands. Then we fill out the entries of the matrix with a for loop. So for each $i$ we simulate 75, 5 and 450 values from $B^P, B^C$ and $\epsilon$ respectively, and use those to create a new set of y-values $y = X\beta + Z(B^P + B^C) + \epsilon$. We then fit a new model specified as `fit2` and calculate corresponding confidence intervals using the Wald-method.
+We use the code from the hint to run 2000 simulations from `fit2`. We first extract the model matrices $X$ and $Z$ and the parameter estimates for $\beta, \tau_P^2, \tau_C^2$ and $\sigma^2$. We then create an empty $2000\times 3$ matrix to store the simulations of $\hat{\delta}$ and the corresponding Wald confidence bands. Then we fill out the entries of the matrix with a for loop. So in each $i = 1,...,2000$ we simulate 75, 5 and 450 values from $B^P, B^C$ and $\epsilon$ respectively, and use those to create a new set of y-values $y = X\beta + Z(B^P + B^C) + \epsilon$. We then fit a new model specified as `fit2` and calculate corresponding confidence intervals using the Wald-method.
 
 ```{r, warning=FALSE, message=FALSE}
 library(MASS)
@@ -319,6 +325,8 @@ deltasim <- deltasim %>% data.frame()
 names(deltasim) <- c("est","lower","upper")
 ```
 
+Running the simulations gives a few warnings of type `boundary (singular) fit: see help('isSingular')`. This happens when the variance of a random effect is estimated to be 0. Although this warning should be taken into account, it is not an immediate problem, as it is simply a consequence of the variation in the data. Keeping track of the number of warnings, we find that it happens between 50 and 70 times during the 2000 simulations. We argue that this is a small enough proportion, to not affect the validity of the simulation.
+
 To see if $\hat{\delta}$ is approximately an unbiased estimator of $\delta$, we check whether the mean of $\hat{\delta}$ is approximately equal to $\delta$.
 ```{r}
 delta <- fixef(fit2)[4]
@@ -326,9 +334,10 @@ unname(mean(deltasim$est) - delta) %>% knitr::kable(col.names = " ")
 ```
 This is close to 0, so $\hat{\delta}$ seems unbiased.
 
-To check if we obtain the desired coverage, we simply calculate what percentage of the simulated intervals cover our true $\delta$-vaule.
+To check if we obtain the desired coverage, we simply calculate what percentage of the simulated intervals cover the true $\delta$-vaule.
 ```{r}
-mean(deltasim$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim$upper) |> knitr::kable(col.names = " ")
+mean(deltasim$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim$upper) |> 
+  knitr::kable(col.names = " ")
 ```
 As we can see, we obtain approximately the desired coverage.
 
@@ -470,9 +479,9 @@ We can conclude that the model estimates and confidence intervals are robust to 
 
 ## 7.
 
-We proceed to carry out model validaiton for `fit2`. We follow the procedure given in chapter 5 of the lecture notes on mixed models. We start with a residual plot:
+We proceed to carry out model validation for `fit2`. We follow the procedure given in chapter 5 of the lecture notes on mixed models and start with a residual plot:
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=9, fig.height=6, fig.align='center'}
+```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=5, fig.height=3.5, fig.align='center'}
 fit2res <- fit2 %>% residuals()
 fit2fitted <- fit2 %>% fitted()
 
@@ -485,7 +494,7 @@ ggplot(fit2Diag, aes(x = fitted, y = residuals)) +
   labs(x = "Fitted values", y = "Residuals")
 ```
 
-We may be tempted to conclude that the residuals display an alarming pattern. We should however keep in mind, that the response is discrete while the fitted values are not. Hence, the lines in the plot, are in fact to be expected. In particular, for each response value, $a = 1,...,7$, we have a linear relationship between the fitted values and the residuals $Resdiual = a - Fitted$. The line fitted with `geom_smooth` suggests, that the residuals have mean around zero, and display no concerning trend. We run a few simulations to check the if we can replicate the residual plot:
+We may be tempted to conclude that the residuals display an alarming pattern. We should however keep in mind, that the response is discrete while the fitted values are not. Hence, the lines in the plot, are in fact to be expected. In particular, for each response value, $a = 1,...,7$, we have a linear relationship between the fitted values and the residuals $Resdiual = a - Fitted$. The blue line (fitted with `geom_smooth`) suggests, that the residuals have mean around zero and no concerning trend. We run a few simulations to check if we can replicate the residual plot:
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=9, fig.height=5, fig.align='center'}
 yNew1 <- round(simulate(fit2)[,1])
@@ -527,11 +536,11 @@ p4 <- ggplot(simDiagNew4, aes(x = fitted, y = residuals)) +
 grid.arrange(p1, p2, p3, p4, ncol = 2)
 ```
 
-Note, we have discretized the response in the simulations to get more comparable residual plots. We have no other restrictions on the predictions, so the model simulates responses outside the range 1 to 7. This gives more lines than in the original residual plot, but other than this, the residual plots for the simulations resemble the residual plot for the original model. Hence, it seems reasonable to conclude that the model captures the mean structure of the data.
+Note, we have discretized the response in the simulations to get a comparable pattern. We have no other restrictions on the predictions, so the model simulates responses outside the range 1 to 7. This gives more lines than in the original residual plot, but other than this, the residual plots for the simulations resemble the residual plot for the original model. Hence, it seems reasonable to conclude that the model captures the mean structure of the data.
 
 We proceed to check normality of the residuals with a qq-plot:
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=7, fig.height=5, fig.align='center'}
+```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=4.5, fig.height=4.5, fig.align='center'}
 qqnorm(fit2res)
 abline(0,sigma)
 ```
@@ -540,7 +549,7 @@ The qq-plot shows that the residuals to a large extent are normal. There are som
 
 We finally inspect the predicted random effects. As we have 75 random effects for participants, it makes sense to make a qq-plot for this random effect. With only 5 classes we may argue that a qq-plot for this random effect is less informative, but for completeness we plot this as well.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=10, fig.height=4, fig.align='center'}
+```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=8, fig.height=4.5, fig.align='center'}
 library(lattice)
 #fit2 %>% ranef() %>% dotplot() Jeg har udkommenteret denne del, da jeg ikke helt ved, om det giver mening. Helle bruger dette til at tjekke uafhængighed mellem intercept og slope, og vi har vel kun intercept. Men måske uafhængighed mellem participants og classes?
 
@@ -593,26 +602,50 @@ deltasim5 <- deltasim5 |> data.frame()
 names(deltasim5) <- c("est","lower","upper")
 ```
 
-We calculate the bias for both approaches:
+We finally try a method, where we set all values below 1 to 1 and all values above 7 to 7. We call this Method 3.
+
+```{r, message = FALSE, warning = FALSE}
+deltasim6 <- matrix(NA,M,3)
+
+for (i in 1:M){
+  y <- simulate(fit2)$sim_1 
+  y <- ifelse(y < 1, 1, y)
+  y <- ifelse(y > 7, 7, y)
+  y <- y |> round()
+  lmm2 <- lmer(y ~ ProdVersion + ProdType + (1|Participant) + (1|Class), data=likingdata)
+  deltasim6[i,1] <- fixef(lmm2)[4]
+  deltasim6[i,2:3] <- (lmm2 |> confint(method="Wald"))[7,]
+}
+
+deltasim6 <- deltasim6 |> data.frame()
+names(deltasim6) <- c("est","lower","upper")
+```
+
+
+We calculate the bias for all three approaches:
 
 ```{r, echo = FALSE}
-tibble(" " = c("Method 1", "Method 2"),
+tibble(" " = c("Method 1", "Method 2", "Method 3"),
        "Bias" = c(mean(deltasim4$est - fixef(fit2)[4]),
-       mean(deltasim5$est - fixef(fit2)[4]))) |> knitr::kable()
+                  mean(deltasim5$est - fixef(fit2)[4]),
+                  mean(deltasim6$est - fixef(fit2)[4]))) |> 
+  knitr::kable()
 ```
 
 And coverage:
 
 ```{r}
-tibble(" " = c("Method 1", "Method 2"),
+tibble(" " = c("Method 1", "Method 2", "Method 3"),
        "Coverage" = c(mean(deltasim4$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim4$upper),
-                  mean(deltasim5$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim5$upper))) |>
+                      mean(deltasim5$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim5$upper),
+                      mean(deltasim6$lower <= fixef(fit2)[4] & fixef(fit2)[4] <= deltasim6$upper))) |>
   knitr::kable()
 ```
 
-We still obtain the desired coverage and it seems that $\hat{\delta}$ is still an unbiased estimator, regardless of the discretization of the predictor-variables.
+We note, that with method 1, we obtain the desired coverage and it seems that $\hat{\delta}$ is still an unbiased estimator. This is not the case with method 2 and 3. Method 2 seems to be an especially poor choice, as the coverage is 0 and the bias is large.
 
-To further investigate whether the two estimators behave the same, we plot a histogram of their distributions.
+To further investigate how the estimators behave with the different types of discretization, we plot histograms of the estimate of $\delta$ for the three methods. We also include the estimate of $\delta$ from the continuous data.
+
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 data.frame(deltasim4) %>% 
   ggplot() +
@@ -635,9 +668,20 @@ data.frame(deltasim5) %>%
   geom_vline(xintercept = fixef(fit2)[4], 
              color = "darkred", linetype = "dashed", size = 1, alpha = 0.8) +
   scale_fill_manual(values = c("discrete" = "steelblue", "continuous" = "darkseagreen4"))
+
+data.frame(deltasim6) %>% 
+  ggplot() +
+  geom_histogram(aes(x = est, y = ..density.., fill = "discrete"), 
+                 color = "white", alpha = 0.5, bins = 30) +
+  geom_histogram(data = data.frame(deltasim), 
+                 aes(x = est, y = ..density.., fill = "continuous"), 
+                 color = "white", alpha = 0.5, bins = 30) +
+  geom_vline(xintercept = fixef(fit2)[4], 
+             color = "darkred", linetype = "dashed", size = 1, alpha = 0.8) +
+  scale_fill_manual(values = c("discrete" = "steelblue", "continuous" = "darkseagreen4"))
 ```
 
-Their distributions seem fairly similar as well. Although the one without discretization has smaller variance and is thus slightly more peaked. But overall it seems that both methods provide descent estimators of $\delta$.
+The histograms confirm the picture we got from the bias and coverage calculations. The first method resembles the continuous case fairly well with a slight increase in variance. The other methods appear to be poor choices.
 
 
 
