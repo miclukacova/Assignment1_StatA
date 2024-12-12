@@ -130,7 +130,7 @@ grid.arrange(p1, p2, p3, layout_matrix = layout)
 ```
 There is definetely a difference in the overall liking when looking at the product type. And it does seem that there might be a tendency for the liking to decrease as we move from products A to C. 
 
-To visualize if there could possibly be a difference in overall liking based on `Class` we calculate the average liking in each Class for both `Product`, `ProdType` and `ProdVersion` and plot them.
+To visualize if there could possibly be a difference in overall liking based on `Class` we calculate the average liking in each Class for both `ProdType` and `ProdVersion` and plot them.
 ```{r, fig.width=10, fig.height=4, fig.align='center', echo=FALSE, warning=FALSE, message=FALSE}
 likingdata <- likingdata %>%
   group_by(Class, ProdType) %>% 
@@ -646,39 +646,41 @@ We note, that with method 1, we obtain the desired coverage and it seems that $\
 
 To further investigate how the estimators behave with the different types of discretization, we plot histograms of the estimate of $\delta$ for the three methods. We also include the estimate of $\delta$ from the continuous data.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
-data.frame(deltasim4) %>% 
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=8}
+p1 <- data.frame(deltasim4) %>% 
   ggplot() +
-  geom_histogram(aes(x = est, y = ..density.., fill = "discrete"), 
+  geom_histogram(aes(x = est, y = ..density.., fill = "Method 1 - discrete"), 
                  color = "white", alpha = 0.5, bins = 30) +
   geom_histogram(data = data.frame(deltasim), 
                  aes(x = est, y = ..density.., fill = "continuous"), 
                  color = "white", alpha = 0.5, bins = 30) +
   geom_vline(xintercept = fixef(fit2)[4], 
              color = "darkred", linetype = "dashed", size = 1, alpha = 0.8) +
-  scale_fill_manual(values = c("discrete" = "steelblue", "continuous" = "darkseagreen4"))
+  scale_fill_manual(values = c("Method 1 - discrete" = "steelblue", "continuous" = "darkseagreen4"))
 
-data.frame(deltasim5) %>% 
+p2 <- data.frame(deltasim5) %>% 
   ggplot() +
-  geom_histogram(aes(x = est, y = ..density.., fill = "discrete"), 
+  geom_histogram(aes(x = est, y = ..density.., fill = "Method 2 - discrete"), 
                  color = "white", alpha = 0.5, bins = 30) +
   geom_histogram(data = data.frame(deltasim), 
                  aes(x = est, y = ..density.., fill = "continuous"), 
                  color = "white", alpha = 0.5, bins = 30) +
   geom_vline(xintercept = fixef(fit2)[4], 
              color = "darkred", linetype = "dashed", size = 1, alpha = 0.8) +
-  scale_fill_manual(values = c("discrete" = "steelblue", "continuous" = "darkseagreen4"))
+  scale_fill_manual(values = c("Method 2 - discrete" = "steelblue", "continuous" = "darkseagreen4"))
 
-data.frame(deltasim6) %>% 
+p3 <- data.frame(deltasim6) %>% 
   ggplot() +
-  geom_histogram(aes(x = est, y = ..density.., fill = "discrete"), 
+  geom_histogram(aes(x = est, y = ..density.., fill = "Method 3 - discrete"), 
                  color = "white", alpha = 0.5, bins = 30) +
   geom_histogram(data = data.frame(deltasim), 
                  aes(x = est, y = ..density.., fill = "continuous"), 
                  color = "white", alpha = 0.5, bins = 30) +
   geom_vline(xintercept = fixef(fit2)[4], 
              color = "darkred", linetype = "dashed", size = 1, alpha = 0.8) +
-  scale_fill_manual(values = c("discrete" = "steelblue", "continuous" = "darkseagreen4"))
+  scale_fill_manual(values = c("Method 3 - discrete" = "steelblue", "continuous" = "darkseagreen4"))
+
+grid.arrange(p1, p2, p3, nrow = 2)
 ```
 
 The histograms confirm the picture we got from the bias and coverage calculations. The first method resembles the continuous case fairly well with a slight increase in variance. The other methods appear to be poor choices.
