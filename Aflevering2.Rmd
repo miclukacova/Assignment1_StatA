@@ -121,8 +121,7 @@ Multiplikativ effekt?
 
 # 4. 
 
-To test whether the difference in expected blood volume between Elite and Control subjects differs
-between women and men, we test the following hypothesis. 
+To test whether the difference in expected log transformed average blood volume between Elite and Control subjects differs between women and men, we test the following hypothesis. (Vi kan kun )
 
 $$H_0: \beta_{\text{Sex}\times\text{Group}}=0$$
 
@@ -211,17 +210,27 @@ Both tests result in p-values quite larger than 0.05, and we conclude that we ca
 
 # 5. 
 
+We fit the model:
 ```{r}
 mod3 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + Weight + Laboratory + (1|Subject) + 
           ar1(Time-1|Subject), data=averagedata)
 ```
-
-$\tau_U$:
+We read of the different estimates:
 ```{r}
-cor
+VarCorr(mod3)
 ```
-$\sigma_W$:
+That is: $\tau_U = 3.9349e-02$, $\sigma_W = 1.9828e-02$, $\phi = 0.167$, $\sigma = 2.1931e-05$.
+The formula for the variance of $\log_{10} Y_{ij}$ is:
+$$Var(\log_{10} Y_{ij}) = V(U_i) + V(\epsilon_i) + V(W_{ij}) = \tau_U^2 + \sigma^2 + \sigma^2_{W}$$
+Where we have used independence. The estimate is
+```{r}
+3.9349e-02^2 + 2.1931e-05^2 + 1.9828e-02^2
+```
 
+
+
+
+https://cran.r-project.org/web/packages/glmmTMB/vignettes/covstruct.html#the-ar1-covariance-structure
 
 # 6.
 
