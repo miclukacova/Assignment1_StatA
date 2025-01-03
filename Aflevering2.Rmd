@@ -121,7 +121,9 @@ Multiplikativ effekt?
 
 # 4. 
 
-To test whether the difference in expected log transformed average blood volume between Elite and Control subjects differs between women and men, we test the following hypothesis. (Vi kan kun )
+Note that performing tests regarding the median of expected average blood volume corresponds to performing tests regarding the median of expected log transformed average blood volume, since the median is invariant to the log transformation. (??) 
+
+To test whether the difference in expected log transformed average blood volume between Elite and Control subjects differs between women and men we test the following hypothesis.
 
 $$H_0: \beta_{\text{Sex}\times\text{Group}}=0$$
 
@@ -219,20 +221,49 @@ We read of the different estimates:
 ```{r}
 VarCorr(mod3)
 ```
+```{r}
+tau_u <- 3.9349e-02
+sigma_w <- 1.9828e-02
+phi <- 0.167
+sigma <- 2.1931e-05
+```
+
 That is: $\tau_U = 3.9349e-02$, $\sigma_W = 1.9828e-02$, $\phi = 0.167$, $\sigma = 2.1931e-05$.
 The formula for the variance of $\log_{10} Y_{ij}$ is:
 $$Var(\log_{10} Y_{ij}) = V(U_i) + V(\epsilon_i) + V(W_{ij}) = \tau_U^2 + \sigma^2 + \sigma^2_{W}$$
 Where we have used independence. The estimate is
 ```{r}
-3.9349e-02^2 + 2.1931e-05^2 + 1.9828e-02^2
+var_y <- tau_u^2 + sigma^2 + sigma_w^2
+var_y
 ```
-
-
-
+And the standard deviation is:
+```{r}
+sd_y <- sqrt(var_y)
+sd_y
+```
 
 https://cran.r-project.org/web/packages/glmmTMB/vignettes/covstruct.html#the-ar1-covariance-structure
 
 # 6.
+For $j \neq k$:
+$$\text{cov}(\log_{10} Y_{i,j}, \log_{10} Y_{i,k}) = \text{cov}(U_i, U_i) + \text{cov}(\epsilon_{i,j}, \epsilon_{i,k}) + \text{cov}(W_{i,k}, W_{i,k}) = \tau_0^2 + \sigma^2_W\phi^{|j-k|}$$
+Furthermore we have:
+$$SD(\log_{10} Y_{i,j})SD(\log_{10} Y_{i,k}) = \text{Var}(\log_{10} Y_{i,j}) = \tau_U^2 + \sigma^2 + \sigma^2_{W}$$
+So by the standard formula for correlation we find
+$$\text{corr}(\log Y_{i,1}, \log_{10} Y_{i,2}) = \frac{\tau_U^2 + \sigma^2_{W} \phi}{\tau_U^2 + \sigma^2 + \sigma^2_W}$$
+```{r}
+(tau_u^2 + sigma_w^2 * phi) / var_y
+```
+
+$$\text{corr}(\log Y_{i,1}, \log_{10} Y_{i,12}) = \frac{\tau_U^2 + \sigma^2_{W} \phi^{11}}{\tau_U^2 + \sigma^2 + \sigma^2_W}$$
+```{r}
+(tau_u^2 + sigma_w^2 * phi^11) / var_y
+```
+
+$$\text{corr}(\log Y_{i,1}, \log_{10} Y_{i,31/30}) = \frac{\tau_U^2 + \sigma^2_{W} \phi^{31/30}}{\tau_U^2 + \sigma^2 + \sigma^2_W}$$
+```{r}
+(tau_u^2 + sigma_w^2*phi^(1/30))/var_y
+```
 
 # 7.
 
@@ -240,6 +271,11 @@ https://cran.r-project.org/web/packages/glmmTMB/vignettes/covstruct.html#the-ar1
 mod4 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + Weight + Laboratory +
           (Group-1||Subject), dispformula=~Group-1, data=averagedata, REML=TRUE)
 ```
+```{r}
+VarCorr(mod4)
+```
+
+
 
 $\tau_{U,\text{Elite}}$:
 ```{r, echo = FALSE}
@@ -254,5 +290,7 @@ $\sigma_{U,\text{Elite}}$
 ```{r}
 VarCorr(mod4)
 ```
-
 $\sigma_{U,\text{Control}}$
+
+# 8. 
+
