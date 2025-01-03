@@ -19,6 +19,7 @@ library(nlme)
 library(lme4)
 library(glmmTMB)
 theme_set(theme_bw())
+library(rstan)
 ```
 
 ```{r, include=FALSE, warning=FALSE, message=FALSE}
@@ -269,7 +270,7 @@ $$\text{corr}(\log Y_{i,1}, \log_{10} Y_{i,31/30}) = \frac{\tau_U^2 + \sigma^2_{
 
 ```{r}
 mod4 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + Weight + Laboratory +
-          (Group-1||Subject), dispformula=~Group-1, data=averagedata, REML=TRUE)
+          (Group-1||Subject), dispformula=~Group-1, data=averagedata)
 ```
 ```{r}
 VarCorr(mod4)
@@ -293,4 +294,47 @@ VarCorr(mod4)
 $\sigma_{U,\text{Control}}$
 
 # 8. 
+
+```{r}
+mod5 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + Weight + Laboratory +
+                  ar1(Time-1|Subject) + (Group-1||Subject), 
+                dispformula=~Group-1, data=averagedata, REML=TRUE)
+
+summary(mod5)
+
+```
+
+# 9. 
+
+Jeg ved ikke hvilken model det skal være?
+
+```{r}
+mod6 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + Weight + Laboratory +
+                  AllocatedMonth + (Group-1||Subject), dispformula=~Group-1, 
+                data=averagedata)
+```
+
+```{r}
+anova(mod6, mod4)
+```
+
+```{r}
+mod_red3 <- glmmTMB(log10(AveBloodvolume) ~ Sex + Weight + Laboratory
+                    + (Group-1||Subject), dispformula=~Group-1, data=averagedata)
+anova(mod4, mod_red3)
+```
+# 10. 
+
+```{r}
+fit1 <- stan(
+  file = "lmm-gamma.stan",  # Stan program
+  data = blooddata,    # named list of data
+  #chains = 4,             # number of Markov chains
+  #warmup = 1000,          # number of warmup iterations per chain
+  #iter = 2000,            # total number of iterations per chain
+  #cores = 1,              # number of cores (could use one per chain)
+  #refresh = 0             # no progress shown
+)
+```
+
 
