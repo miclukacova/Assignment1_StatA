@@ -1,0 +1,249 @@
+---
+title: "Assignment 2"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, include=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(MASS)
+library(gridExtra)
+library(tidyverse)
+library(nlme)
+library(lme4)
+library(glmmTMB)
+theme_set(theme_bw())
+```
+
+```{r, include=FALSE, warning=FALSE, message=FALSE}
+load("assignment2024-2.Rdata")
+```
+
+# 1.
+
+```{r}
+blooddata1 <- blooddata %>%
+  group_by(Pair) %>%
+  summarise(AveBloodvolume = mean(Bloodvolume))
+
+blooddata2 <- blooddata %>%
+  dplyr::select(-c("Bloodvolume", "Pair")) %>%
+  unique()
+
+averagedata <- cbind(blooddata1, blooddata2)
+
+summary(averagedata)
+```
+# 2. 
+
+To give an impression about how blood volume varies over calendar year, between males and females and between elite skiers and control exercisers we make scatter plots stratified on `Group` and `Sex`. 
+
+```{r}
+averagedata %>%
+  ggplot()+
+  geom_point(aes(x=AllocatedMonth, y=AveBloodvolume))+
+  facet_grid(~Group + Sex)+
+  theme(axis.text.x = element_blank())
+```
+There are clear differences in the four plots, both in variation and in mean. Most clearly the observations belonging to males have a larger blood volume. They also seem to have a larger variation. But this might also be due to there being less observations for the females. There also seems to be a difference between Elite and Control, where the Elite observations seem to have larger blood volume. It is difficult to assess whether the difference between Control and Elite is equally large for both males and females, that is whether there is an interaction effect between `group` and `sex`. Below plots only stratified on respectively `Group`and `Sex` are made. 
+
+```{r}
+averagedata %>%
+  ggplot()+
+  geom_point(aes(x=AllocatedMonth, y=AveBloodvolume))+
+  facet_grid(~Group) +
+  theme(axis.text.x = element_blank())
+```
+Here we again see a slight increase in `AveBloodvolume` between Elite and Control. 
+
+```{r}
+averagedata %>%
+  ggplot()+
+  geom_point(aes(x=AllocatedMonth, y=AveBloodvolume))+
+  facet_grid(~Sex) +
+  theme(axis.text.x = element_blank())
+```
+It is very clear from the plot that there is a big difference in AveBloodvolume between males and females. 
+
+# 3.
+
+We fit the two models
+
+```{r}
+mod1 <- lmer(AveBloodvolume ~ Sex*Group + Laboratory + Weight + (1|Subject), 
+             data = averagedata)
+
+mod2 <- lmer(log10(AveBloodvolume) ~ Sex*Group + Laboratory + Weight + (1|Subject), 
+             data = averagedata)
+```
+
+We perform model validtion for Model 1:
+```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=5, fig.height=3.5, fig.align='center'}
+mod1res <- mod1 %>% residuals()
+mod1fitted <- mod1 %>% fitted()
+
+mod1Diag <- data.frame(residuals = mod1res, fitted = mod1fitted)
+
+ggplot(mod1Diag, aes(x = fitted, y = residuals)) + 
+  geom_point() + 
+  geom_smooth() +
+  theme_bw() +
+  labs(x = "Fitted values", y = "Residuals")
+
+qqnorm(mod1res)
+```
+There seems to be an increase in variation of the residuals as the fitted values increase. This is a violation of model assumptions. The qqplot looks fine. We perform model validation for Model 2:
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE,fig.width=5, fig.height=3.5, fig.align='center'}
+mod2res <- mod2 %>% residuals()
+mod2fitted <- mod2 %>% fitted()
+
+mod2Diag <- data.frame(residuals = mod2res, fitted = mod2fitted)
+
+ggplot(mod2Diag, aes(x = fitted, y = residuals)) + 
+  geom_point() + 
+  geom_smooth() +
+  theme_bw() +
+  labs(x = "Fitted values", y = "Residuals")
+
+qqnorm(mod2res)
+```
+
+The residual plot looks better for this model. The qqplot also looks fine. 
+
+Multiplikativ effekt?
+
+# 4. 
+
+To test whether the difference in expected blood volume between Elite and Control subjects differs
+between women and men, we test the following hypothesis. 
+
+$$H_0: \beta_{\text{Sex}\times\text{Group}}=0$$
+
+First we perform a LRT using the asymptotic $\chi^2$-distribution to compute the p-value:
+```{r}
+mod_red1 <- lmer(log10(AveBloodvolume) ~ Sex + Group + Laboratory + Weight + (1|Subject), 
+             data = averagedata)
+```
+
+```{r}
+anova(mod2, mod_red1)
+```
+The LRT results in an insignificant p-value. Since the $\chi^2$ assumption is true asymptotically, we must be careful with the p-value. The p-value is quite large, so we are not likely to get a different result by simulation, nonetheless we, in order to verify our results, furthermore compute an empirical p-value by simulating under the null hypothesis. 
+
+```{r}
+# Simulated p-value in test for TVset
+sim1 <- pbkrtest::PBmodcomp(mod2, mod_red1, nsim=2000, seed=967)
+sim1
+
+# Extract simulated LRTs
+LRT_int <- as.numeric(sim1$ref)
+
+# Density for chi-square with df=1
+dchisq1 <- function(x) dchisq(x,df=1)
+
+# Histogram with overlaid density
+data.frame(LRT_int = LRT_int) |> 
+  ggplot(aes(x = LRT_int)) + 
+  geom_histogram(aes(y = ..density..), breaks=seq(0,18,0.5), color="black", fill="white") +
+  geom_function(fun = dchisq1, colour = "red", xlim=c(0.12,15), linewidth=1) +
+  xlab("LRT") + ylab("Density") + ggtitle("Test for interaction effect") +
+  geom_vline(xintercept=1.3197, color="blue",linewidth=1, linetype="dashed")
+```
+We can also test the hypothesis by using the Wald test statistic with the normal approximation, resulting in the following p-value:
+
+```{r}
+# Summary with Wald test statistics but not p-value
+mod2 %>% summary() %>% coefficients()
+
+# p-value from asymptotic N(0,1)
+2*pnorm(-1.0569530)
+```
+As with the $\chi^2$ approximation the test statistic will asymptotically under the null follow a normal distribution. One must therefore also be critical of the p-value. And last but not least we perform an approximate F-test using the Satterthwaite's approximation:
+
+```{r}
+lmerTest::lmer(AveBloodvolume ~ Sex*Group + Laboratory + Weight + (1|Subject), 
+             data = averagedata) |> drop1()
+```
+The approximate F-test results in a very large p-value, much larger than the other ones. Perhaps the approximation is not too good.
+
+All tests result in insignificant p-values, and we conclude that we cannot reject the null hypothesis, and thus we do not find evidence that the difference in expected blood volume between Elite and Control differs between men and women. We continue with the model `mod_red1`. 
+
+To test whether there is an overall difference in expected blood volume between Elite and Control
+subjects, we test the following hypothesis:
+
+$$H_0: \beta_{Group} = 0$$
+In the model `mod_red1`. As before we start out by computing the p-value using the the asymptotic $\chi^2$ approximation:
+
+```{r}
+mod_red2 <- lmer(log10(AveBloodvolume) ~ Sex + Laboratory + Weight + (1|Subject), 
+             data = averagedata)
+
+anova(mod_red1, mod_red2)
+```
+
+The effect is not significant with a significance level of 0.05. We again compute an empirical p-value by simulating under the null. 
+
+```{r}
+# Simulated p-value in test for Group
+sim2 <- pbkrtest::PBmodcomp(mod_red1, mod_red2, nsim=2000, seed=967)
+sim2
+
+# Extract simulated LRTs
+LRT_group <- as.numeric(sim2$ref)
+
+# Histogram with overlaid density
+data.frame(LRT_group = LRT_group) |> 
+  ggplot(aes(x = LRT_group)) + 
+  geom_histogram(aes(y = ..density..), breaks=seq(0,18,0.5), color="black", fill="white") +
+  geom_function(fun = dchisq1, colour = "red", xlim=c(0.12,15), linewidth=1) +
+  xlab("LRT") + ylab("Density") + ggtitle("Test for Group effect") +
+  geom_vline(xintercept=3.2087, color="blue",linewidth=1, linetype="dashed")
+```
+
+Both tests result in p-values quite larger than 0.05, and we conclude that we cannot reject the null hypothesis, and thus we do not find evidence that there is an overall difference in expected blood volume between Elite and Control subjects.
+
+# 5. 
+
+```{r}
+mod3 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + Weight + Laboratory + (1|Subject) + 
+          ar1(Time-1|Subject), data=averagedata)
+```
+
+$\tau_U$:
+```{r}
+cor
+```
+$\sigma_W$:
+
+
+# 6.
+
+# 7.
+
+```{r}
+mod4 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + Weight + Laboratory +
+          (Group-1||Subject), dispformula=~Group-1, data=averagedata, REML=TRUE)
+```
+
+$\tau_{U,\text{Elite}}$:
+```{r, echo = FALSE}
+exp(fixef(mod4)$disp[2])
+```
+
+$\tau_{U,\text{control}}$
+```{r, echo = FALSE}
+exp(fixef(mod4)$disp[1])
+```
+$\sigma_{U,\text{Elite}}$
+```{r}
+VarCorr(mod4)
+```
+
+$\sigma_{U,\text{Control}}$
