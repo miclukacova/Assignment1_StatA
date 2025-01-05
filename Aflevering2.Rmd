@@ -38,9 +38,8 @@ blooddata2 <- blooddata %>%
   unique()
 
 averagedata <- cbind(blooddata1, blooddata2)
-
-summary(averagedata)
 ```
+
 # 2. 
 
 To give an impression about how blood volume varies over calendar year, between males and females and between elite skiers and control exercisers we make scatter plots stratified on `Group` and `Sex`. 
@@ -213,6 +212,8 @@ Both tests result in p-values quite larger than 0.05, and we conclude that we ca
 
 # 5. 
 
+Tag stilling til REML. 
+
 We fit the model:
 ```{r}
 mod3 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + Weight + Laboratory + (1|Subject) + 
@@ -226,7 +227,7 @@ VarCorr(mod3)
 tau_u <- 3.9349e-02
 sigma_w <- 1.9828e-02
 phi <- 0.167
-sigma <- 2.1931e-05
+sigma <- summary(mod3)$sigma
 ```
 
 That is: $\tau_U = 3.9349e-02$, $\sigma_W = 1.9828e-02$, $\phi = 0.167$, $\sigma = 2.1931e-05$.
@@ -242,8 +243,6 @@ And the standard deviation is:
 sd_y <- sqrt(var_y)
 sd_y
 ```
-
-https://cran.r-project.org/web/packages/glmmTMB/vignettes/covstruct.html#the-ar1-covariance-structure
 
 # 6.
 For $j \neq k$:
@@ -272,36 +271,37 @@ $$\text{corr}(\log Y_{i,1}, \log_{10} Y_{i,31/30}) = \frac{\tau_U^2 + \sigma^2_{
 mod4 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + Weight + Laboratory +
           (Group-1||Subject), dispformula=~Group-1, data=averagedata)
 ```
+
 ```{r}
 VarCorr(mod4)
 ```
 
 
 
-$\tau_{U,\text{Elite}}$:
+$\tau_{U,\text{Elite}} = 0.036979$
+```{r}
+tau_u_elite <- 0.036979
+tau_u_control <- 0.042160
+```
+
+$\sigma_{\text{Elite}}$
 ```{r, echo = FALSE}
 exp(fixef(mod4)$disp[2])
 ```
 
-$\tau_{U,\text{control}}$
+$\sigma_{\text{control}}$
 ```{r, echo = FALSE}
 exp(fixef(mod4)$disp[1])
 ```
-$\sigma_{U,\text{Elite}}$
-```{r}
-VarCorr(mod4)
-```
-$\sigma_{U,\text{Control}}$
 
 # 8. 
 
 ```{r}
 mod5 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + Weight + Laboratory +
                   ar1(Time-1|Subject) + (Group-1||Subject), 
-                dispformula=~Group-1, data=averagedata, REML=TRUE)
+                dispformula=~Group-1, data=averagedata)
 
 summary(mod5)
-
 ```
 
 # 9. 
@@ -309,13 +309,12 @@ summary(mod5)
 Jeg ved ikke hvilken model det skal være?
 
 ```{r}
-mod6 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + Weight + Laboratory +
-                  AllocatedMonth + (Group-1||Subject), dispformula=~Group-1, 
-                data=averagedata)
+mod6 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + Weight + Laboratory + AllocatedMonth 
+        + (1|Subject) + ar1(Time-1|Subject), data=averagedata)
 ```
 
 ```{r}
-anova(mod6, mod4)
+anova(mod3, mod6)
 ```
 
 ```{r}
