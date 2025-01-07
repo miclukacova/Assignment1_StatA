@@ -71,7 +71,68 @@ averagedata %>%
 ```
 It is very clear from the plot that there is a big difference in AveBloodvolume between males and females. 
 
+
+
 # 3.
+
+We initially fit a model with the original average blood volume `AveBloodvolume` as response:
+
+```{r}
+mod1 <- lmer(AveBloodvolume ~ Sex + Group + Sex:Group + Laboratory + Weight + (1|Subject), data = averagedata)
+summary(mod1)
+```
+The parameters `Sexmale` and `GroupElite` are estimated to `1324.56` and `987.89` with standard error `338.92` and `610.86` respectively. The interaction term `Sexmale:GroupElite` is estimated to `319.20` with standard error `467.38`. We refrain from testing the significance of the effects at this point, as we carry out tests in a later exercise.
+
+We proceed to fit the log10-transformed `AveBloodvolume` as response:
+
+```{r}
+mod2 <- lmer(log10(AveBloodvolume) ~ Sex + Group + Sex:Group + Laboratory + Weight + (1|Subject), data = averagedata)
+summary(mod2)
+```
+
+The parameters `Sexmale` and `GroupElite` are estimated to `0.110` and `0.088` with standard error `0.025` and `0.045` respectively. The interaction term `Sexmale:GroupElite` is estimated to `-0.036` with standard error `0.034`. Again, we refrain from testing the significance of the effects at this point, as we carry out tests in a later exercise.
+
+As a quick diagnostic of the two models we plot the residuals against the fitted values for both models as well as QQ-plots for both models. First the model with `AveBloodvolume` as response:
+
+```{r}
+mod1res <- mod1 %>% residuals()
+mod1fitted <- mod1 %>% fitted()
+
+mod1Diag <- data.frame(residuals = mod1res, fitted = mod1fitted)
+
+ggplot(mod1Diag, aes(x = fitted, y = residuals)) + 
+  geom_point() + 
+  geom_smooth() +
+  theme_bw() +
+  labs(x = "Fitted values", y = "Residuals")
+
+qqnorm(mod1res)
+```
+
+We note, that the residuals tend to have a slightly higher variance for high fitted values compared to small fitted values suggesting heteroschedastic residuals and as a consequence that the model does not capture the mean structure of the data very well. The QQ-plot appears to be reasonable. We make similar plots for the model with `log10(AveBloodvolume)` as response:
+
+```{r}
+mod2res <- mod2 %>% residuals()
+mod2fitted <- mod2 %>% fitted()
+
+mod2Diag <- data.frame(residuals = mod2res, fitted = mod2fitted)
+
+ggplot(mod2Diag, aes(x = fitted, y = residuals)) + 
+  geom_point() + 
+  geom_smooth() +
+  theme_bw() +
+  labs(x = "Fitted values", y = "Residuals")
+
+qqnorm(mod2res)
+```
+
+It appears from the above plot, that log-transforming the response solved the problem of heteroschedastic residuals. The residuals appear to be randomly scattered around 0 and we therefore conclude that this model captures the mean structure of the data reasonably well. The QQ-plot looks fine again.
+
+
+
+
+
+### Michaelas del herunder
 
 We fit the two models
 
@@ -245,12 +306,54 @@ sd_y
 ```
 
 # 6.
+
+To compute the correlation $Corr(\log_{10} Y_{i,1}, \log_{10} Y_{i,2})$, we first determine the covariance $Cov(\log_{10} Y_{i,1}, \log_{10} Y_{i,2})$:
+
+$$Cov(\log_{10} Y_{i,1}, \log_{10} Y_{i,2}) = Cov(X_{i1}\beta + U_i + W_{i1} + \epsilon_{i1}, X_{i2} \beta + U_i + W_{i2} + \epsilon_{i2}) = VU_i + Cov(W_{i1}, W_{i2}) = \tau_U^2 + \sigma^2_W \phi^{|t_2-t_1|}$$
+Note that most covariance terms evaluate to zero because of independence between the $U_i$'s, $\epsilon_{ij}$'s and $W_{ij}$'s. The correlation is thus:
+
+$$Corr(\log_{10} Y_{i,1}, \log_{10} Y_{i,2}) = \frac{Cov(\log_{10} Y_{i,1}, \log_{10} Y_{i,2})}{\sqrt{V(\log_{10} Y_{i,1}) V(\log_{10} Y_{i,2})}} = \frac{\tau^2_U + \sigma^2_W \phi^{|t_2 - t_1|}}{\tau_U^2 + \sigma^2_W + \sigma^2}$$
+
+Plugging in the estimates from the fitted model gives
+
+```{r}
+corr_func <- function(tu_2 = tau_u^2, sigmaW_2 = sigma_w^2, sigma_2 = sigma^2, corr = phi, t1, t2){
+  nom <- tu_2 + sigmaW_2 * corr^(abs(t2 - t1))
+  denom <- tu_2 + sigmaW_2 + sigma_2
+  return(nom/denom)
+}
+
+corr_func(t1 = 1, t2 = 2)
+```
+
+Similar derivations reveal that 
+
+$$Corr(\log_{10} Y_{i,1}, \log_{10} Y_{i,12}) = \frac{\tau^2_U + \sigma^2_W \phi^{|t_{12} - t_1|}}{\tau_U^2 + \sigma^2_W + \sigma^2}$$
+and plugging in the model estimates gives:
+
+```{r}
+corr_func(t1 = 1, t2 = 12)
+```
+
+We can use a similar argument for the final one:
+
+$$Corr(\log_{10} Y_{i,1}, \log_{10} Y_{i,1/30}) = \frac{\tau^2_U + \sigma^2_W \phi^{|t_{1} - t_{1/30}|}}{\tau_U^2 + \sigma^2_W + \sigma^2}$$
+such that
+
+```{r}
+corr_func(t1 = 1, t2 = 1 + 1/30)
+```
+
+
+### Michaelas del herunder
+
 For $j \neq k$:
 $$\text{cov}(\log_{10} Y_{i,j}, \log_{10} Y_{i,k}) = \text{cov}(U_i, U_i) + \text{cov}(\epsilon_{i,j}, \epsilon_{i,k}) + \text{cov}(W_{i,k}, W_{i,k}) = \tau_0^2 + \sigma^2_W\phi^{|j-k|}$$
 Furthermore we have:
 $$SD(\log_{10} Y_{i,j})SD(\log_{10} Y_{i,k}) = \text{Var}(\log_{10} Y_{i,j}) = \tau_U^2 + \sigma^2 + \sigma^2_{W}$$
 So by the standard formula for correlation we find
 $$\text{corr}(\log Y_{i,1}, \log_{10} Y_{i,2}) = \frac{\tau_U^2 + \sigma^2_{W} \phi}{\tau_U^2 + \sigma^2 + \sigma^2_W}$$
+
 ```{r}
 (tau_u^2 + sigma_w^2 * phi) / var_y
 ```
@@ -306,6 +409,32 @@ summary(mod5)
 
 # 9. 
 
+Based on the AICs from question 8. we choose the model from question 5. We refit the model including the `AllocatedMonth` variable:
+
+```{r}
+mod6 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + AllocatedMonth + Weight + Laboratory + (1|Subject) + ar1(Time-1|Subject), data=averagedata)
+summary(mod6)
+```
+We then carry out a hypothesis test for the effect of `AllocatedMonth` using the `anova()` command:
+
+```{r}
+anova(mod6, mod3)
+```
+
+We get a p-value of 0.3721 which imply that we cannot reject the null-hypothesis: That `AllocatedMonth` has no effect which suggests, that it is not important to include in the model.
+
+By printing a summary of the model
+
+```{r}
+summary(mod6)
+```
+we see that the p-value for `GroupElite` is `0.0593` so on a 95% significance level it is not significant. It is worth noting that it is a borderline p-value but the conclusion has not changed from the previous question.
+
+
+
+
+### Michaelas del herunder
+
 Jeg ved ikke hvilken model det skal være?
 
 ```{r}
@@ -322,6 +451,7 @@ mod_red3 <- glmmTMB(log10(AveBloodvolume) ~ Sex + Weight + Laboratory
                     + (Group-1||Subject), dispformula=~Group-1, data=averagedata)
 anova(mod4, mod_red3)
 ```
+
 # 10. 
 
 ```{r}
@@ -337,3 +467,74 @@ fit1 <- stan(
 ```
 
 
+# Christian exercise 10 + 11 herunder:
+# 10.
+_Answer the following questions:_
+
+The mean in the gamma distribution is given by
+
+$$\frac{shape}{rate} = 1 \iff shape = rate$$
+If the mean is $1$ for both $F_i$ and $G_{ij}$ this corresponds to the case where the mean of $U_i$ and $\epsilon_{ij}$ is $0$. This corresponds to the standard assumptions about the mean of the random effects and residuals.
+
+
+Done by hand
+
+
+For $\beta$ we use a $\mathcal{N}(0,10)$, for $shape_F$ and $shape_G$ we use $Gamma(1,1)$, for $F$ we use $Gamma(shape_F, shape_F)$ and for $y$ we use $Gamma(shape_G, shape_G/10^{X\beta + ZU})$ where $Z$ is the model matrix for the random effects. We are certain that the posterior is a proper distribution as all the priors are proper priors.
+
+
+
+
+# 11.
+We first need to make data as a list.
+
+```{r}
+# To return number of predictors
+fixef_MM <- mod1 %>% model.matrix() %>% data.frame() %>% as.matrix()
+ranef_MM <- mod1 %>% getME(name="Z") %>% as.matrix() %>% data.frame() %>% as.matrix()
+```
+
+
+```{r}
+noObs <- nrow(fixef_MM)               # number of obs 
+p <- ncol(fixef_MM)                   # number of predictors
+noSubj <- ncol(ranef_MM)              # number of subjects 
+y <- averagedata$AveBloodvolume       # response, i.e. untransformed average bloodvolume
+X <- fixef_MM                         # Model matrix for fixed effects
+Z <- ranef_MM                         # Model matrix for random effects
+```
+
+
+```{r}
+data_list <- list(noObs = noObs,
+                  p = p,
+                  noSubj = noSubj,
+                  y = y,
+                  X = X,
+                  Z = Z)
+```
+
+```{r}
+library(rstan)
+
+regFit <- stan(
+  file = "lmm-gamma.stan",  # Stan program
+  data = data_list,    # named list of data
+  chains = 4,         # number of Markov chains
+  warmup = 750,      # number of warm-up iterations per chain
+  iter = 3000,        # total number of iterations per chain
+  cores = 7,          # number of cores (could use one per chain)
+  refresh = 0         # no progress shown
+)
+```
+
+```{r}
+traceplot(regFit)
+```
+
+
+From the traceplots it appear that the markov chains have converged to the same stationary distribution. 
+
+```{r}
+regFit
+```
