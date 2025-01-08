@@ -152,7 +152,7 @@ anova(mod2, mod_red1)
 ```
 The LRT results in an insignificant p-value of 0.2506. Since the $\chi^2$ distribution is only an assumption that is true asymptotically, we must be careful with the p-value. The p-value is quite large, so we are not likely to get a different result by simulation, nonetheless we, in order to verify our results, compute an empirical p-value by simulating under the null hypothesis. 
 
-```{r}
+```{r, fig.width=10, fig.height=4, fig.align='center', echo = FALSE, warning = FALSE, message = FALSE}
 # Simulated p-value in test for TVset
 sim1 <- pbkrtest::PBmodcomp(mod2, mod_red1, nsim=2000, seed=967)
 sim1
@@ -214,7 +214,7 @@ anova(mod_red1, mod_red2)
 
 The effect is not significant with a significance level of 0.05. We again compute an empirical p-value by simulating under the null. 
 
-```{r}
+```{r, fig.width=10, fig.height=4, fig.align='center', echo = FALSE, warning = FALSE, message = FALSE}
 # Simulated p-value in test for Group
 sim2 <- pbkrtest::PBmodcomp(mod_red1, mod_red2, nsim=2000, seed=967)
 sim2
