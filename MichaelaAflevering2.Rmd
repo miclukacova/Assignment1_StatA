@@ -20,6 +20,8 @@ library(lme4)
 library(glmmTMB)
 theme_set(theme_bw())
 library(rstan)
+options(mc.cores = parallel::detectCores())
+rstan_options(auto_write = TRUE)
 ```
 
 ```{r, include=FALSE, warning=FALSE, message=FALSE}
@@ -36,7 +38,7 @@ blooddata1 <- blooddata %>%
   summarise(AveBloodvolume = mean(Bloodvolume))
 
 blooddata2 <- blooddata %>%
-  dplyr::select(-c("Bloodvolume", "Pair")) %>%
+  select(-c("Bloodvolume", "Pair")) %>%
   unique()
 
 averagedata <- cbind(blooddata1, blooddata2)
@@ -225,6 +227,7 @@ We read of the different estimates:
 ```{r}
 VarCorr(mod3)
 ```
+
 ```{r}
 tau_u <- 3.9349e-02
 sigma_w <- 1.9828e-02
@@ -325,18 +328,73 @@ mod_red3 <- glmmTMB(log10(AveBloodvolume) ~ Sex + Weight + Laboratory
                     + (Group-1||Subject), dispformula=~Group-1, data=averagedata)
 anova(mod4, mod_red3)
 ```
+
 # 10. 
+
+# 11.
+
+Data list
+
+```{r}
+X <- mod1 %>% model.matrix()
+Z <- mod1 %>% getME(name="Z") %>% as.matrix() # %>% data.frame() %>% as.matrix()
+
+blood_data <- list(noObs = nrow(averagedata), 
+                   p = dim(X)[2],
+                   noSubj = length(unique(averagedata$Subject)),
+                   y = averagedata$AveBloodvolume,
+                   X = X,
+                   Z = Z)
+```
+
 
 ```{r}
 fit1 <- stan(
-  file = "lmm-gamma.stan",  # Stan program
-  data = blooddata,    # named list of data
-  #chains = 4,             # number of Markov chains
-  #warmup = 1000,          # number of warmup iterations per chain
-  #iter = 2000,            # total number of iterations per chain
-  #cores = 1,              # number of cores (could use one per chain)
-  #refresh = 0             # no progress shown
+  file = "lmm-gamma.stan",     # Stan program
+  data = blood_data,        # named list of data
+  chains = 4,             # number of Markov chains
+  warmup = 750,           # number of warmup iterations per chain
+  iter = 1100,            # total number of iterations per chain
+  cores = 4,              # number of cores (could use one per chain)
+  refresh = 0             # no progress shown
 )
 ```
+
+Traceplots for the coordinates of $\beta$ and for the shape parameters in the gamma distributions for the $F_i$'s and the $G_{ij}$'s. 
+
+```{r}
+traceplot(fit1)
+```
+```{r}
+sim <- rstan::extract(fit1)
+names(sim)
+hist(sim$beta[,1], main="") 
+```
+
+# 12.
+
+```{r}
+Xij_a <- c(1, 0, 1, 0, 0, 80, 0)
+EY_a <- 10^(as.matrix(sim$beta) %*% Xij_a)
+
+Xij_b <- c(1, 0, 1, 1, 0, 80, 0)
+EY_b <- 10^(as.matrix(sim$beta) %*% Xij_b)
+
+Xij_c <- c(1, 0, 1, 0, 1, 80, 0)
+EY_c <- 10^(as.matrix(sim$beta) %*% Xij_c)
+
+EY <- numeric(1400)
+
+for (i in 1:1400){
+  EY[i] <- mean(EY_a[i], EY_b[i], EY_c[i])
+}
+
+mean(EY)
+quantile(EY, 0.025)
+quantile(EY, 0.975)
+```
+
+
+
 
 
