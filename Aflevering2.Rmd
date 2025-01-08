@@ -28,7 +28,7 @@ load("assignment2024-2.Rdata")
 
 # 1.
 
-We create the `averagedata` by using tidyverse commands, while making sure that other variables are be retained in the new dataset whenever it makes sense. 
+We create the `averagedata` by using tidyverse commands, while making sure that other variables are retained whenever it makes sense. 
 
 ```{r}
 blooddata1 <- blooddata %>%
@@ -178,7 +178,7 @@ data.frame(x = 1-pchisq(LRT_int, 1)) |>
   geom_hline(yintercept = 1, colour = "red", linetype="dashed") +
   xlab("1 - pchisq(LRT)") + ylab("Density") + ggtitle("Test for interaction effect")
 ```
-The simulations result in a p-value of 0.3013, which is even more insignificant than the one we got using the $\chi^2$ assumption. To check the approximation we plot the histogram of the distribution of the simulated LRT together with the density curve of the $\chi^2_1$ distribution, as well as a histogram of a transformation of the simulated LRT values. The transformation performed is $1 - F(LRT)$, and should does result in a uniform distribution if the $\chi^2_1$ approximation is valid. From the plots we conclude, that the approximation is not perfect, but not too bad either. 
+The simulations result in a p-value of 0.3013, which is even more insignificant than the one we got using the $\chi^2_1$ assumption. To check the approximation we plot the histogram of the distribution of the simulated LRT together with the density curve of the $\chi^2_1$ distribution, as well as a histogram of a transformation of the simulated LRT values. The transformation performed is $1 - F(LRT)$, and the transformed values should be uniformly distributed if the $\chi^2_1$ approximation is valid. From the plots we conclude, that the approximation is not perfect, but not too bad either.
 
 We can also test the hypothesis by using the Wald test statistic with the normal approximation, resulting in the following p-value:
 
@@ -195,9 +195,9 @@ The p-value is 0.290533 which is in concordance with the other tests. As with th
 lmerTest::lmer(AveBloodvolume ~ Sex*Group + Laboratory + Weight + (1|Subject), 
              data = averagedata) |> drop1()
 ```
-The approximate F-test results in a very large p-value of 0.499312, much larger than the other ones. Perhaps the approximation is not too good.
+The approximate F-test results in a very large p-value of 0.499312, much larger than the other ones. Perhaps the Satterthwaite's approximation is not too good. The test statistic follows an exact F distribution when the design is particularly nice in the way described in the lecture notes.
 
-All tests result in insignificant p-values, and we conclude that we cannot reject the null hypothesis, and thus we do not find evidence that the difference in expected blood volume between Elite and Control differs between men and women. We continue with the model `mod_red1`. 
+All tests result in insignificant p-values, and we conclude that we cannot reject the null hypothesis, and thus we do not find evidence that the median  in expected average blood volume between Elite and Control differs between men and women. We continue with the model `mod_red1`. 
 
 To test whether there is an overall difference in median average blood volume between Elite and Control subjects, we test the following hypothesis:
 
@@ -238,7 +238,7 @@ data.frame(x = 1-pchisq(LRT_group, 1)) |>
   xlab("1 - pchisq(LRT)") + ylab("Density") + ggtitle("Test for Group effect")
 ```
 
-The simualted p-value is  $0.09345$, and both tests thus result in p-values quite larger than 0.05, and we conclude that we cannot reject the null hypothesis, and thus we do not find evidence that there is an overall difference in expected blood volume between Elite and Control subjects. As before the approximation is not perfect, but not too bad either. 
+The simualted p-value is  $0.09345$, and both tests thus result in p-values larger than 0.05, and we conclude that we cannot reject the null hypothesis, and thus we do not find evidence that there is an overall difference in expected blood volume between Elite and Control subjects. As before the approximation is not perfect, but not too bad either. 
 
 # 5. 
 
@@ -382,23 +382,6 @@ we see that the p-value for `GroupElite` is `0.0593` so on a 95% significance le
 
 # 10. 
 
-```{r}
-fit1 <- stan(
-  file = "lmm-gamma.stan",  # Stan program
-  data = blooddata,    # named list of data
-  #chains = 4,             # number of Markov chains
-  #warmup = 1000,          # number of warmup iterations per chain
-  #iter = 2000,            # total number of iterations per chain
-  #cores = 1,              # number of cores (could use one per chain)
-  #refresh = 0             # no progress shown
-)
-```
-
-
-# Christian exercise 10 + 11 herunder:
-# 10.
-_Answer the following questions:_
-
 *Assume that the gamma distributions for both Fis and Gijs have the shape parameter equal to the rate parameter. Why is this appropriate?*
 
 The mean of a gamma distributed random variable $U$ with shape $\alpha$ and rate $\lambda$ is given by $EU = \frac{\alpha}{\lambda}$. If we let $\alpha = \lambda$ we get
@@ -411,23 +394,21 @@ The model where $F_i$ and $G_{ij}$ both have mean $1$ corresponds to the model w
 Let the shape and rate parameter of the Gamma distribution of $G_{ij}$ be denoted by $\alpha_2$, then
 
 $$Y_{ij}|F_i = 10^{X_{ij}\beta}F_iG_{ij}|F_i \stackrel{D}{=} \text{Gamma}(\alpha_2, \frac{\alpha_2}{10^{X_{ij}\beta}F_i})$$
-Since we condition on $F_i$ the whole term $10^{X_{ij}\beta}F_i$ can be regarded as a constant and the second distributional equality follows from propoerties of the Gamma distribution. 
+Since we condition on $F_i$ the whole term $10^{X_{ij}\beta}F_i$ can be regarded as a constant and the second distributional equality follows from properties of the Gamma distribution. 
 
-In the Stan code we have
+In the Stan code we have specified the distribution of $Y_{ij}$ as `gamma(shapeG, shapeG/pow(10,X*beta+Z*U))` which is exactly what we have stated above ($Z$ is the model matrix for the random effects). 
 
+*Which priors are used for (hyper)parameters in the Stan program? Explain why it is certain that the posterior is a proper distribution.*
 
-For $\beta$ we use a $\mathcal{N}(0,10)$, for $shape_F$ and $shape_G$ we use $Gamma(1,1)$, for $F$ we use $Gamma(shape_F, shape_F)$ and for $y$ we use $Gamma(shape_G, shape_G/10^{X\beta + ZU})$ where $Z$ is the model matrix for the random effects. We are certain that the posterior is a proper distribution as all the priors are proper priors.
-
-
-
+For $\beta$ we use a $\mathcal{N}(0,10)$, for $shape_F$ and $shape_G$ we use $Gamma(1,1)$, for $F$ we use $Gamma(shape_F, shape_F)$. We are certain that the posterior is a proper distribution as all the priors are proper priors.
 
 # 11.
 We first need to make data as a list.
 
 ```{r}
 # To return number of predictors
-fixef_MM <- mod1 %>% model.matrix() %>% data.frame() %>% as.matrix()
-ranef_MM <- mod1 %>% getME(name="Z") %>% as.matrix() %>% data.frame() %>% as.matrix()
+fixef_MM <- mod1 %>% model.matrix() 
+ranef_MM <- mod1 %>% getME(name="Z") %>% as.matrix() 
 ```
 
 
@@ -459,7 +440,7 @@ regFit <- stan(
   chains = 4,         # number of Markov chains
   warmup = 750,      # number of warm-up iterations per chain
   iter = 3000,        # total number of iterations per chain
-  cores = 7,          # number of cores (could use one per chain)
+  cores = 4,          # number of cores (could use one per chain)
   refresh = 0         # no progress shown
 )
 ```
@@ -468,9 +449,56 @@ regFit <- stan(
 traceplot(regFit)
 ```
 
-
 From the traceplots it appear that the markov chains have converged to the same stationary distribution. 
 
 ```{r}
 regFit
 ```
+
+```{r}
+sim <- rstan::extract(regFit)
+names(sim)
+hist(sim$beta[,1], main="") 
+```
+
+
+# 12. 
+
+Let $X_{ij,A}, X_{ij,B}$ and $X_{ij,C}$ be the covariate information corresponding to a blood sample belonging to an elite female skier with body weight 80 kg from respectively lab A, B and C. 
+
+```{r}
+Xij_a <- c(1, 0, 1, 0, 0, 80, 0)
+Xij_b <- c(1, 0, 1, 1, 0, 80, 0)
+Xij_c <- c(1, 0, 1, 0, 1, 80, 0)
+```
+
+In order to get samples from the posterior distribution for $\mu = E(Y_{ij}|X_{ij}) = 10^{X_{ij} \beta}$ we can use the simulations from the posterior distribution of $\beta$ created by the `stan` command in the previous question. For each draw from the posterior we calculate three values $\mu_A = 10^{X_{i, Aj} \beta}$, $\mu_B = 10^{X_{ij, B} \beta}$ and $\mu_C = 10^{X_{ij, C} \beta}$, corresponding to the expected blood volume of the elite female skier from respectively lab A, B and C. 
+
+```{r}
+mu_a <- 10^(as.matrix(sim$beta) %*% Xij_a)
+mu_b <- 10^(as.matrix(sim$beta) %*% Xij_b)
+mu_c <- 10^(as.matrix(sim$beta) %*% Xij_c)
+```
+
+To find the average over the three labs, we for each draw take the average of $\mu_A$, $\mu_B$ and $\mu_C$.
+
+```{r}
+EY <- numeric(1400)
+
+for (i in 1:1400){
+  EY[i] <- mean(mu_a[i], mu_b[i], mu_c[i])
+}
+```
+
+Now we can simply take the mean of the draws from the posterior of $\mu$, and obtain the posterior mean of $\mu$ to be:
+
+```{r}
+mean(EY) %>% knitr::kable(col.names = " ")
+```
+
+By taking the quantiles of the posterior draws we find the posterior interval for $\mu$ to be
+
+```{r}
+t(quantile(EY, c(0.025, 0.975))) %>% knitr::kable() 
+```
+
