@@ -476,12 +476,12 @@ We can now compare the AIC-values for the different models. We have included the
 q <- c(3,4,5,7,8)
 
 AIC <- c(AIC(mod2), AIC(mod_red2), AIC(mod3), AIC(mod4),AIC(mod5))
-form <- c(as.character(mod2@call$formula), as.character(mod_red2@call$formula), 
-          as.character(formula(mod3)), as.character(formula(mod4)),
-                                                    as.character(formula(mod5)))
+form <- c(paste("3:", as.character(mod2@call$formula)), paste("4:", as.character(mod_red2@call$formula)), 
+          paste("5:", as.character(formula(mod3))), paste("7:", as.character(formula(mod4))),
+                                                    paste("8:", as.character(formula(mod5))))
 
 
-df <- data.frame("Q" = q, "AIC" = AIC, "Formula" = form[c(3,6,9,12,15)] )
+df <- data.frame("AIC" = AIC, "Question:Formula" = form[c(3,6,9,12,15)] )
 knitr::kable(df)
 ```
 The AIC-value is an estimate of how much information is lost, when we fit the different models. Thus we are interested in minimizing the AIC. So based on these AIC-values, the model from Question 5 performs the best.
@@ -580,7 +580,8 @@ regFit <- stan(
 ```
 We can then use `traceplot` to obtain traceplots for both $\beta$, the shape parameters for the gamma-distribution and $F_i$ and $G_{ij}$:
 ```{r, warning=FALSE, message=FALSE}
-par <- c("beta[1]","beta[2]", "beta[3]","beta[4]","beta[5]","beta[6]","beta[7]","shapeF", "shapeG")
+par <- c("beta[1]","beta[2]", "beta[3]","beta[4]","beta[5]","beta[6]","beta[7]"
+         ,"shapeF", "shapeG")
 traceplot(regFit, pars = par)
 ```
 
@@ -588,7 +589,7 @@ From the traceplots it appear that the markov chains have converged to the same 
 
 ```{r, echo=FALSE, warning=FALSE, eval=FALSE}
 sim <- rstan::extract(regFit)
-hist(sim$beta[,1], main="") 
+#hist(sim$beta[,1], main="") 
 ```
 
 
