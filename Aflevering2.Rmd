@@ -587,7 +587,7 @@ traceplot(regFit, pars = par)
 
 From the traceplots it appear that the markov chains have converged to the same stationary distribution i.e all chains have mixed and remain stationary. 
 
-```{r, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 sim <- rstan::extract(regFit)
 #hist(sim$beta[,1], main="") 
 ```
