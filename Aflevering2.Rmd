@@ -40,6 +40,8 @@ blooddata2 <- blooddata %>%
   unique()
 
 averagedata <- cbind(blooddata1, blooddata2)
+
+head(averagedata)
 ```
 
 As `Subject` and `Laboratory`, `Subject` and `GroupxSex`, `GroupxSex` and `Group` and `GroupxSex` and `Sex` are all nested the factor diagram looks like:
@@ -85,7 +87,7 @@ grid.arrange(p1, p2, legend_l, ncol = 3, widths = c(3,3,1))
 ```
 There are clear differences in the two plots. It is evident that the men have a much higher mean blood-volume than the women in our sample. This seems to be the main difference, though on average it seems, that the women have a slightly higher variation, however this is quite possibly because we have fewer observations for women than for men.
 
-We now move on to create similar plots stratified accordin to `Group` instead.
+We now move on to create similar plots stratified according to `Group` instead.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center', fig.width=10, fig.height=4}
 p1 <- ggplot(data = averagedata, aes(x = AllocatedMonth, y = AveBloodvolume)) +
@@ -118,7 +120,7 @@ legend_l <- cowplot::get_legend(p3)
 
 grid.arrange(p1, p2, legend_l, ncol = 3, widths = c(3,3,1))
 ```
-Here there are also clear differences. On average there is both a difference in mean and quite a large variation for Control, compared to Group. For each participant it is however hard to decipher if there is a difference - it does seem that the mean is lower for `Control`, but there is also a great overlap. This is likely because we have men and women in the same plot, and as we saw earlier, there was a significant difference in the mean based on `Sex`. Thus we create plots stratified both according to `Sex` and `Group`, to get a better visualization.
+Here there are also clear differences. On average there is both a difference in mean and quite a large variation for Control, compared to Elite. The difference in mean is partly due to the proportion of males and females in Control and Elite differing, the proportion of females in Control is $0.41$ and $0.21$ in Elite. For each participant it is however hard to decipher if there is a difference - it does seem that the mean is lower for `Control`, but there is also a great overlap. This is likely because we have men and women in the same plot, and as we saw earlier, there was a significant difference in the mean based on `Sex`. Thus we create plots stratified both according to `Sex` and `Group`, to get a better visualization.
 
 ```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=10, fig.height=7.5}
 p1 <- ggplot(data = averagedata, aes(x = AllocatedMonth, y = AveBloodvolume)) +
@@ -143,9 +145,9 @@ p2 <- ggplot(data = avg_grp, aes(x = AllocatedMonth, y = AveBloodvolume)) +
 
 grid.arrange(p1, p2, nrow = 2)
 ```
-We can here see the same effects as for the earlier plot for men and women. We can now also see, that there seems to be a bigger difference between Control and Elite for women. For men the difference is not as great neither on average or for each individual participant. For each individual male, there is a bigger spread in the mean for the Elite group, than the Control.
+We see the same effects as for the earlier plot for men and women. We also see, that there seems to be a bigger difference in average blood volume between Control and Elite for women compared to men.
 
-We also note, that there is a significant increase on average for both men and women in august. We check our data to see which participants this stems from
+We also note, that there is a significant increase on average for both men and women in the control group in august. We check our data to see which participants this stems from
 ```{r, echo=FALSE, fig.width=5, fig.height=2.5}
 # Subset the data for August and Control group
 aug <- averagedata[(averagedata$AllocatedMonth == "08_August" & averagedata$Group == "Control"), ]
@@ -196,7 +198,14 @@ summary(mod2)
 
 The parameters `Sexmale` and `GroupElite` are estimated to `0.110` and `0.088` with standard error `0.025` and `0.045` respectively. The interaction term `Sexmale:GroupElite` is estimated to `-0.036` with standard error `0.034`. Again, we refrain from testing the significance of the effects at this point, as we carry out tests in a later exercise.
 
-As a quick diagnostic of the two models we plot the residuals against the fitted values for both models as well as QQ-plots for both models. First the model with `AveBloodvolume` as response:
+A common reason for log transformation is right skewed data. We plot a histogram of the response variable to see whether this is the case
+
+```{r, echo=FALSE, fig.align='center', fig.height=2, fig.width=3, message=FALSE, warning=FALSE}
+ggplot(averagedata, aes(x = AveBloodvolume, y = ..density..)) + 
+  geom_histogram(color = "white") 
+```
+
+This does not seem to be the case. We move on to consider model diagnostics. As a quick diagnostic of the two models we plot the residuals against the fitted values for both models as well as QQ-plots for both models. First the model with `AveBloodvolume` as response:
 
 ```{r, echo=FALSE, fig.align='center', fig.height=2, fig.width=3, message=FALSE, warning=FALSE}
 mod1res <- mod1 %>% residuals()
@@ -238,24 +247,20 @@ qqnorm(mod2res)
 
 It appears from the above plot, that log-transforming the response solved the problem of heteroschedastic residuals. The residuals appear to be randomly scattered around 0 and we therefore conclude that this model captures the mean structure of the data reasonably well. The QQ-plot looks fine again.
 
-*Note: Hun nævnte til forelæsningen at man transformere når vi har skewed data, men det havde vi ikke vel?*
-
-*The log transformation further more changes the way we model effects from additive to multiplicative. It could be that there was a preference in this regard, but we are not aware of such. - Synes vi skal skrive dette her også bare just in case (Dina)*
-
 # 4. 
 
-Note that performing tests regarding the median of expected average blood volume corresponds to performing tests regarding the median of expected $\log_{10}$ transformed average blood volume. Thus a significant result regarding the median on log scale, nicely translates to a significant result regarding the median on untransformed scale. Since the median is equal to the mean in the normal distribution, we can carry on with or tests as per usual.
+The log transformation changes the way we model effects from additive to multiplicative. This implies that performing tests regarding the median of expected average blood volume corresponds to performing tests regarding the median of expected $\log_{10}$ transformed average blood volume. Thus a significant result regarding the median on log scale, nicely translates to a significant result regarding the median on untransformed scale. Since the median is equal to the mean in the normal distribution, we can carry on with or tests as per usual.
 
 To test whether the median of average blood volume between Elite and Control subjects differs between women and men we test the following hypothesis.
 
 $$H_0: \beta_{\text{Sex}\times\text{Group}}=0$$
-First we perform a LRT using the $\chi^2$-distribution to compute the p-value:
-```{r}
+First we perform a LRT using the $\chi^2$-distribution to compute the p-value using `anova`:
+```{r, echo = FALSE}
 mod_red1 <- lmer(log10(AveBloodvolume) ~ Sex + Group + Laboratory + Weight + (1|Subject), 
              data = averagedata)
 anova(mod2, mod_red1)
 ```
-The LRT results in an insignificant p-value of 0.2506. Since the $\chi^2$ distribution is only an assumption that is true asymptotically, we must be careful with the p-value. The p-value is quite large, so we are not likely to get a different result by simulation, nonetheless we, in order to verify our results, compute an empirical p-value by simulating under the null hypothesis. 
+The LRT results in an insignificant p-value of 0.2506. Since the test statistic, under the null, is only $\chi^2$ distribution asymptotically, we must be careful with the p-value. The p-value is quite large, so we are not likely to get a different result by simulation, nonetheless we, in order to verify our results, compute an empirical p-value by simulating under the null hypothesis. 
 
 ```{r, fig.width=10, fig.height=4, fig.align='center', echo = FALSE, warning = FALSE, message = FALSE}
 # Simulated p-value in test for TVset
@@ -285,7 +290,7 @@ p2 <- data.frame(x = 1-pchisq(LRT_int, 1)) |>
 
 grid.arrange(p1, p2, ncol = 2)
 ```
-The simulations result in a p-value of 0.3013, which is even more insignificant than the one we got using the $\chi^2_1$ assumption. To check the approximation we have plotted the histogram of the distribution of the simulated LRT together with the density curve of the $\chi^2_1$ distribution, as well as a histogram of a transformation of the simulated LRT values. The transformation performed is $1 - F(LRT)$, and the transformed values should be uniformly distributed if the $\chi^2_1$ approximation is valid. From the plots we conclude, that the approximation is not perfect, but not too bad either.
+The simulations result in a p-value of 0.27997, which is slightly more insignificant than the one we got using the $\chi^2_1$ assumption. To check the approximation we have plotted the histogram of the distribution of the simulated LRT together with the density curve of the $\chi^2_1$ distribution, as well as a histogram of a transformation of the simulated LRT values. The transformation performed is $1 - F(LRT)$, and the transformed values should be uniformly distributed if the $\chi^2_1$ approximation is valid. From the plots we conclude, that the approximation is not perfect, but not too bad either.
 
 We can also test the hypothesis by using the Wald test statistic with the normal approximation, resulting in the following p-value:
 
@@ -302,7 +307,7 @@ The p-value is 0.290533 which is in concordance with the other tests. As with th
 lmerTest::lmer(log10(AveBloodvolume) ~ Sex + Group + Sex*Group + Laboratory + Weight + (1|Subject), 
              data = averagedata) |> drop1()
 ```
-The approximate F-test results in an insignificant p-value similar to the other ones we have obtained. The test statistic follows an exact F distribution when the design is particularly nice in the way described in the lecture notes. *Hvad betyder denne her linje?*
+The approximate F-test results in an insignificant p-value similar to the other ones we have obtained. The test statistic follows an exact F distribution when the design is particularly nice in the way described in the lecture notes. Since our data is not balanced, the requirements are not fullfilled, and the test statistic not F-distributed. 
 
 All tests result in insignificant p-values, and we conclude that we cannot reject the null hypothesis, and thus we do not find evidence that the median  in expected average blood volume between Elite and Control differs between men and women. We continue with the model `mod_red1`. 
 
@@ -310,9 +315,9 @@ To test whether there is an overall difference in median average blood volume be
 
 $$H_0: \beta_{Group} = 0$$
 
-In the model `mod_red1`. As before we start out by computing the p-value using the the asymptotic $\chi^2$ approximation:
+As before we start out by computing the p-value using the the asymptotic $\chi^2$ approximation using `anova`:
 
-```{r}
+```{r, echo = FALSE}
 mod_red2 <- lmer(log10(AveBloodvolume) ~ Sex + Laboratory + Weight + (1|Subject), 
              data = averagedata)
 anova(mod_red1, mod_red2)
@@ -346,12 +351,12 @@ p2 <- data.frame(x = 1-pchisq(LRT_group, 1)) |>
 grid.arrange(p1, p2, ncol = 2)
 ```
 
-The simualted p-value is  $0.09345$, and both tests thus result in p-values larger than 0.05, and we conclude that we cannot reject the null hypothesis, and thus we do not find evidence that there is an overall difference in expected blood volume between Elite and Control subjects. As before the approximation is not perfect, but not too bad either. 
+The simualted p-value is  $0.09045$, and both tests thus result in p-values larger than 0.05, and we conclude that we cannot reject the null hypothesis, and thus we do not find evidence that there is an overall difference in expected blood volume between Elite and Control subjects. As before the approximation is not perfect, but not too bad either. 
 
 # 5. 
-The correlation structure from (1) is not reasonable, because we are comparing different time-points. There could perhaps be a seasonal dependence-structure. Furthermore, there is also a great possibility that the correlation is greater between two variables with timepoints close to eachother i.e there is a strong possibility that samples from march and april are more strongly correlated than samples from march and december, and the previous model did not allow for this possibilty.
+The correlation structure from (1) might not be reasonable, because we are comparing different time-points and there could for instance be a seasonal dependence-structure. Furthermore, it is possible that the correlation is greater between two variables with time points close to each other i.e there is a strong possibility that samples from March and April are more correlated than samples from March and December, and the previous model did not allow for this possibility.
 
-We fit the model with the AR1-term using `glmmTMB`. As we may want to carry out hypothesis-tests later on, we will simply use the ML-estimates instead of the REML estimates, even though the ML-estimates are slightly biased.
+We fit the model with the AR1-term using `glmmTMB`. As we want to compare model AICs later, we use the ML estimates instead of the REML estimates, even though the ML-estimates can be slightly biased.
 ```{r}
 mod3 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + Weight + Laboratory + 
                   (1|Subject) + ar1(Time-1|Subject), data=averagedata)
@@ -368,7 +373,7 @@ phi <- 0.167
 sigma <- summary(mod3)$sigma
 ```
 
-That is: $\tau_U = 3.9349e-02$, $\sigma_W = 1.9828e-02$, $\phi = 0.167$, $\sigma = 2.1931e-05$.
+That is: $\hat{\tau}_U = 3.9349e-02$, $\hat{\sigma_W} = 1.9828e-02$, $\hat{\phi} = 0.167$, $\hat{\sigma} = 2.1931e-05$.
 
 The formula for the variance of $\log_{10} Y_{ij}$ is:
 $$Var(\log_{10} Y_{ij}) = V(U_i) + V(\epsilon_i) + V(W_{ij}) = \tau_U^2 + \sigma^2 + \sigma^2_{W}$$
@@ -386,7 +391,6 @@ sd_y
 # 6.
 
 To compute the correlation $Corr(\log_{10} Y_{i,1}, \log_{10} Y_{i,2})$, we first determine the covariance $Cov(\log_{10} Y_{i,1}, \log_{10} Y_{i,2})$:
-
 $$Cov(\log_{10} Y_{i,1}, \log_{10} Y_{i,2}) = Cov(X_{i1}\beta + U_i + W_{i1} + \epsilon_{i1}, X_{i2} \beta + U_i + W_{i2} + \epsilon_{i2}) = VU_i + Cov(W_{i1}, W_{i2}) = \tau_U^2 + \sigma^2_W \phi^{|t_2-t_1|}$$
 Note that most covariance terms evaluate to zero because of independence between the $U_i$'s, $\epsilon_{ij}$'s and $W_{ij}$'s. The correlation is thus:
 
@@ -421,6 +425,8 @@ Which gives an estimate of $Corr(\log_{10} Y_{i,1}, \log_{10} Y_{i,1+1/30})$:
 corr_func(t1 = 1, t2 = 1 + 1/30)
 ```
 
+As expected observations closer in time are more correlated. 
+
 # 7.
 
 We fit the model:
@@ -434,7 +440,7 @@ And we extract estimates corresponding to the variance of the random effects wit
 ```{r}
 VarCorr(mod4)
 ```
-That is is $\tau_{U,\text{Elite}} = 0.036979$ and $\tau_{U,\text{Control}} = 0.042160$ 
+That is is $\hat{\tau}_{U,\text{Elite}} = 0.036979$ and $\hat{\tau}_{U,\text{Control}} = 0.042160$ 
 ```{r, echo = FALSE}
 tau_u_elite <- 0.036979
 tau_u_control <- 0.042160
@@ -445,7 +451,7 @@ To find the estimates of $\sigma_{\text{Elite}}$ and $\sigma_{\text{control}}$ w
 ```{r}
 exp(fixef(mod4)$disp)
 ```
-So our estimates for the variance of the residuals are $\sigma_{\text{control}} = 0.01916792$ and $\sigma_{\text{Elite}} = 0.01975819$
+So our estimates for the standard deviation of the residuals are $\hat{\sigma}_{\text{control}} = 0.01916792$ and $\hat{\sigma}_{\text{Elite}} = 0.01975819$
 
 ```{r, echo = FALSE}
 sigma_elite <- exp(fixef(mod4)$disp[2])
@@ -464,7 +470,7 @@ But we get a warning, which results in NA-values for AIC, BIC and logLikelihood.
 ```{r}
 diagnose(mod5_i)
 ```
-We here see that including the intercept seems to be the main reason why we get non-positive eigenvalues in the Hessian. We then removed the intercept, to see if we could avoid numerical issues in this way. However, this did not solve the numerical issues, and repeating the process using `diagnose` we saw, that including the `Group` was what was causing problems. As such we have also removed `Group`, to fit the model below, which does not encounter numerical issues:
+We see that including the intercept might be the reason why we get non-positive eigenvalues in the Hessian. We then removed the intercept, to see if we could avoid numerical issues in this way. However, this did not solve the numerical issues, and repeating the process using `diagnose` we saw that `Group` was causing problems. As such we have also removed `Group`, to fit the model below, which does not encounter numerical issues:
 
 ```{r}
 mod5 <- glmmTMB(log10(AveBloodvolume) ~ -1 + Sex + Weight + Laboratory +
@@ -484,9 +490,9 @@ form <- c(paste("3:", as.character(mod2@call$formula)), paste("4:", as.character
 df <- data.frame("AIC" = AIC, "Question:Formula" = form[c(3,6,9,12,15)] )
 knitr::kable(df)
 ```
-The AIC-value is an estimate of how much information is lost, when we fit the different models. Thus we are interested in minimizing the AIC. So based on these AIC-values, the model from Question 5 performs the best.
+We are interested in minimizing the AIC. So based on these AIC-values, the model from Question 5 performs the best.
 
-This tells us, that the most optimal variance and covariance structure, is the one where we allow for the correlation to vary depending on how close two observations are in time, but that allowing the variance to differ between groups, does not seem to create a better model-fit. So the first models, where we assume indpendence between timeperiods and the ones where we include Group-specific variation do not fit as well as the model, where we assume the variance to be independent of Group but dependent on the observations from other timeperiods, weighted by how close observations are in time. I.e that the Correlation structure described in Question 6 is the one that allows for the best fit.
+This tells us, that the most optimal variance and covariance structure, is the one where we allow for the correlation to vary depending on how close two observations are in time, but that allowing the variance to differ between groups, does not seem to create a better model-fit. I.e that the Correlation structure described in Question 6 is the one that allows for the best fit.
 
 
 # 9. 
