@@ -497,7 +497,7 @@ This tells us, that the most optimal variance and covariance structure, is the o
 
 # 9. 
 
-Based on the AICs from Question 8. we choose the model from Question 5. We refit the model including the `AllocatedMonth` variable:
+Based on the AICs from Question 8 we choose the model from Question 5. We refit the model including the `AllocatedMonth` variable:
 
 ```{r}
 mod6 <- glmmTMB(log10(AveBloodvolume) ~ Group + Sex + AllocatedMonth + Weight +
@@ -510,14 +510,14 @@ We then carry out a hypothesis test for the effect of `AllocatedMonth` using the
 anova(mod6, mod3)
 ```
 
-We get a p-value of 0.3721 which imply that we cannot reject the null-hypothesis: That `AllocatedMonth` has no effect which suggests, that it is not important to include in the model.
+We get a p-value of 0.3721 so we cannot reject the null-hypothesis: That `AllocatedMonth` has no effect.
 
 By printing a summary of the model
 
 ```{r}
 summary(mod6)
 ```
-we see that the p-value for `GroupElite` is `0.0593` so on a 95% significance level it is not significant. It is worth noting that it is a borderline p-value but the conclusion has not changed from the previous question.
+We see that the p-value for `GroupElite` is `0.0593` so on a 95% significance level it is not significant. It is worth noting that it is a borderline p-value but the conclusion has not changed from the previous question.
 
 # 10. 
 
@@ -533,21 +533,25 @@ So the multiplicative model where $F_i$ and $G_{ij}$ both have mean $1$ correspo
 Let the shape and rate parameter of the Gamma distribution of $G_{ij}$ be denoted by $\alpha_2$, then
 
 $$Y_{ij}|F_i = 10^{X_{ij}\beta}F_iG_{ij}|F_i \stackrel{D}{=} \text{Gamma}(\alpha_2, \frac{\alpha_2}{10^{X_{ij}\beta}F_i})$$
-Since we condition on $F_i$ the whole term $10^{X_{ij}\beta}F_i$ can be regarded as a constant and the second distributional equality follows from properties of the Gamma distribution. 
+Since we condition on $F_i$, the whole term $10^{X_{ij}\beta}F_i$ can be regarded as a constant and the second distributional equality follows from properties of the Gamma distribution. 
 
 In the Stan code we have specified the distribution of $Y_{ij}$ as `gamma(shapeG, shapeG/pow(10,X*beta+Z*U))` which is exactly what we have stated above ($Z$ is the model matrix for the random effects). 
 
 *Which priors are used for (hyper)parameters in the Stan program? Explain why it is certain that the posterior is a proper distribution.*
 
-For $\beta$ we use a $\mathcal{N}(0,10)$, for $shape_F$ and $shape_G$ we use $Gamma(1,1)$, for $F$ we use $Gamma(shape_F, shape_F)$. We are certain that the posterior is a proper distribution as all the priors are proper priors. we know they are proper, as they are all given by well-defined probability distributions.
+For $\beta$ we use a $\mathcal{N}(0,10)$, for $shape_F$ and $shape_G$ we use $Gamma(1,1)$, for $F$ we use $Gamma(shape_F, shape_F)$. We are certain that the posterior is a proper distribution as all the priors are proper priors. We know they are proper, as they are all given by well-defined probability distributions.
 
 # 11.
-We first need to make a list consisting of our data, and the various parameters and modelmatrices needed for the Stan-program.
+We first need to make a list consisting of our data, and the various parameters and model matrices needed for the Stan-program. We have decided to use the model with fixed effects `Sex`, `Group`, `Laboratory` and `Weight`, that is we do not include the interaction effect between `Group` and `Sex` as we saw that it was insignificant in Question 4.  
 
 ```{r}
 # To return number of predictors
-fixef_MM <- mod1 %>% model.matrix() 
-ranef_MM <- mod1 %>% getME(name="Z") %>% as.matrix() 
+med_stan <- lmer(AveBloodvolume ~ Sex + Group + Laboratory + Weight + 
+                   (1 | Subject), data = averagedata)
+
+# 
+fixef_MM <- med_stan %>% model.matrix() 
+ranef_MM <- med_stan %>% getME(name="Z") %>% as.matrix() 
 ```
 
 
@@ -570,28 +574,33 @@ data_list <- list(noObs = noObs,
                   Z = Z)
 ```
 
-We can then run the Stan-program to to obtain Markov chains for all parameter estimates
-```{r, warning=FALSE, echo=FALSE}
+We can then run the Stan-program to obtain Markov chains for all parameter estimates
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
 library(rstan)
-
+set.seed(10012024)
 regFit <- stan(
   file = "lmm-gamma.stan",  # Stan program
   data = data_list,    # named list of data
   chains = 4,         # number of Markov chains
-  warmup = 750,      # number of warm-up iterations per chain
-  iter = 3000,        # total number of iterations per chain
+  warmup = 1000,      # number of warm-up iterations per chain
+  iter = 4000,        # total number of iterations per chain
   cores = 4,          # number of cores (could use one per chain)
   refresh = 0         # no progress shown
 )
 ```
 We can then use `traceplot` to obtain traceplots for both $\beta$, the shape parameters for the gamma-distribution and $F_i$ and $G_{ij}$:
-```{r, warning=FALSE, message=FALSE}
-par <- c("beta[1]","beta[2]", "beta[3]","beta[4]","beta[5]","beta[6]","beta[7]"
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+par <- c("beta[1]","beta[2]", "beta[3]","beta[4]","beta[5]","beta[6]"
          ,"shapeF", "shapeG")
 traceplot(regFit, pars = par)
 ```
 
-From the traceplots it appear that the markov chains have converged to the same stationary distribution i.e all chains have mixed and remain stationary. 
+From the traceplots it appear that the markov chains have converged to the same stationary distribution i.e all chains have mixed and remain stationary. We can also get the $\hat{R}$-values for the estimates:
+
+```{r}
+regFit@.MISC$summary$rhat[1:8,] %>% knitr::kable()
+```
+
 
 ```{r, echo=FALSE, warning=FALSE}
 sim <- rstan::extract(regFit)
@@ -604,9 +613,9 @@ sim <- rstan::extract(regFit)
 Let $X_{ij,A}, X_{ij,B}$ and $X_{ij,C}$ be the covariate information corresponding to a blood sample belonging to an elite female skier with body weight 80 kg from respectively lab A, B and C. 
 
 ```{r}
-Xij_a <- c(1, 0, 1, 0, 0, 80, 0)
-Xij_b <- c(1, 0, 1, 1, 0, 80, 0)
-Xij_c <- c(1, 0, 1, 0, 1, 80, 0)
+Xij_a <- c(1, 0, 1, 0, 0, 80)
+Xij_b <- c(1, 0, 1, 1, 0, 80)
+Xij_c <- c(1, 0, 1, 0, 1, 80)
 ```
 
 In order to get samples from the posterior distribution for $\mu = E(Y_{ij}|X_{ij}) = 10^{X_{ij} \beta}$ we can use the simulations from the posterior distribution of $\beta$ created by the `stan` command in the previous question. For each draw from the posterior we calculate three values $\mu_A = 10^{X_{i, Aj} \beta}$, $\mu_B = 10^{X_{ij, B} \beta}$ and $\mu_C = 10^{X_{ij, C} \beta}$, corresponding to the expected blood volume of the elite female skier from respectively lab A, B and C. 
@@ -620,11 +629,7 @@ mu_c <- 10^(as.matrix(sim$beta) %*% Xij_c)
 To find the average over the three labs, we for each draw take the average of $\mu_A$, $\mu_B$ and $\mu_C$.
 
 ```{r}
-EY <- numeric(1400)
-
-for (i in 1:1400){
-  EY[i] <- mean(mu_a[i], mu_b[i], mu_c[i])
-}
+EY <- rowMeans(cbind(mu_a, mu_b, mu_c))
 ```
 
 Now we can simply take the mean of the draws from the posterior of $\mu$, and obtain the posterior mean of $\mu$ to be:
@@ -637,5 +642,11 @@ By taking the quantiles of the simulations from the posterior we find the poster
 
 ```{r, echo=FALSE}
 t(quantile(EY, c(0.025, 0.975))) %>% knitr::kable() 
+```
+
+
+
+```{r}
+averagedata %>% filter(Sex == "female" & Group == "Elite") %>% summarise(mean = mean(AveBloodvolume))
 ```
 
